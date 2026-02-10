@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в портал</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .security-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #0369a1;
+        }
+        
+        .security-info i {
+            margin-right: 5px;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .otp-section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .qr-code img {
+            max-width: 200px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🔐 Портал проектов</h1>
+            <p>Требуется аутентификация</p>
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            Неверное имя пользователя или пароль
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Введите имя пользователя"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Введите пароль"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="remember" name="remember">
+                    Запомнить меня (30 дней)
+                </label>
+            </div>
+            
+            <button type="submit" class="btn-login">
+                <span id="btnText">Войти в систему</span>
+                <span id="btnSpinner" style="display: none;">⌛ Вход...</span>
+            </button>
+        </form>
+        
+        <!-- 2FA секция (опционально) -->
+        <div id="otpSection" class="otp-section">
+            <div class="form-group">
+                <label for="otp">Код двухфакторной аутентификации</label>
+                <input 
+                    type="text" 
+                    id="otp" 
+                    name="otp" 
+                    placeholder="000000"
+                    maxlength="6"
+                    pattern="\d{6}"
+                >
+            </div>
+            
+            <div class="qr-code">
+                <p>Или отсканируйте QR-код:</p>
+                <div id="qrcode"></div>
+            </div>
+            
+            <button onclick="verify2FA()" class="btn-login">
+                Подтвердить
+            </button>
+        </div>
+        
+        <div class="security-info">
+            <strong>🛡️ Информация о безопасности:</strong>
+            <p>• Используется HTTPS шифрование</p>
+            <p>• Пароли хранятся в хешированном виде</p>
+            <p>• Неактивные сессии завершаются через 30 минут</p>
+        </div>
+        
+        <div class="login-footer">
+            <p>© 2024 Портал проектов. Для авторизованного доступа.</p>
+            <p>Проблемы со входом? <a href="mailto:admin@localhost">Свяжитесь с администратором</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Простая аутентификация (в реальном проекте заменить на JWT)
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Показать спиннер
+            document.getElementById('btnText').style.display = 'none';
+            document.getElementById('btnSpinner').style.display = 'inline';
+            
+            // Имитация запроса к серверу
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Проверка учетных данных (в реальности - запрос к API)
+            const validUsers = {
+                'admin': 'ChangeMe123!',
+                'user': 'password123',
+                'demo': 'demo'
+            };
+            
+            if (validUsers[username] && validUsers[username] === password) {
+                // Успешный вход
+                localStorage.setItem('portal_auth', 'true');
+                localStorage.setItem('portal_user', username);
+                
+                if (remember) {
+                    const expiry = new Date();
+                    expiry.setDate(expiry.getDate() + 30);
+                    localStorage.setItem('portal_expiry', expiry.toISOString());
+                }
+                
+                // Добавляем JWT токен (в реальности получаем с сервера)
+                const fakeToken = btoa(JSON.stringify({
+                    user: username,
+                    role: username === 'admin' ? 'admin' : 'user',
+                    exp: Date.now() + 3600000
+                }));
+                localStorage.setItem('portal_token', fakeToken);
+                
+                // Перенаправляем на главную
+                window.location.href = '/';
+            } else {
+                // Ошибка входа
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('btnText').style.display = 'inline';
+                document.getElementById('btnSpinner').style.display = 'none';
+                
+                // Анимация ошибки
+                document.getElementById('loginForm').style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    document.getElementById('loginForm').style.animation = '';
+                }, 500);
+            }
+        });
+        
+        // Проверка существующей сессии
+        window.addEventListener('load', function() {
+            const auth = localStorage.getItem('portal_auth');
+            const expiry = localStorage.getItem('portal_expiry');
+            
+            if (auth === 'true' && expiry) {
+                const expiryDate = new Date(expiry);
+                if (expiryDate > new Date()) {
+                    window.location.href = '/';
+                } else {
+                    localStorage.removeItem('portal_auth');
+                    localStorage.removeItem('portal_expiry');
+                    localStorage.removeItem('portal_token');
+                }
+            }
+        });
+        
+        // Стиль для анимации ошибки
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

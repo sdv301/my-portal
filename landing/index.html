@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портал моих проектов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .portal-container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .portal-header {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .portal-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .portal-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            padding: 40px;
+        }
+        
+        .project-card {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: #6366f1;
+        }
+        
+        .flask-card::before {
+            background: #10b981;  /* Зеленый для Python/Flask */
+        }
+        
+        .react-card::before {
+            background: #3b82f6;  /* Синий для React */
+        }
+        
+        .tech-stack {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .tech-tag {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .flask-tag {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .react-tag {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #4f46e5;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        .flask-btn {
+            background: #10b981;
+        }
+        
+        .flask-btn:hover {
+            background: #0da271;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .react-btn {
+            background: #3b82f6;
+        }
+        
+        .react-btn:hover {
+            background: #2563eb;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .project-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .project-description {
+            color: #64748b;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-live {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        @media (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .portal-header {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <div class="portal-header">
+            <h1>🚀 Портал моих проектов</h1>
+            <p>Выберите проект для перехода к нему</p>
+        </div>
+        
+        <div class="projects-grid">
+            <!-- Flask проект -->
+            <div class="project-card flask-card">
+                <span class="status-badge status-live">● Активен</span>
+                <div class="project-icon">🐍</div>
+                <h2>Flask API Backend</h2>
+                <p class="project-description">
+                    Полноценный бэкенд на Python Flask с REST API, 
+                    базой данных и аутентификацией. Идеально для MVP.
+                </p>
+                
+                <div class="tech-stack">
+                    <span class="tech-tag flask-tag">Python</span>
+                    <span class="tech-tag flask-tag">Flask</span>
+                    <span class="tech-tag flask-tag">SQLAlchemy</span>
+                    <span class="tech-tag flask-tag">JWT</span>
+                    <span class="tech-tag flask-tag">Docker</span>
+                </div>
+                
+                <button class="btn flask-btn" onclick="openProject('/flask')">
+                    Открыть Flask приложение
+                </button>
+                
+                <div style="margin-top: 15px; font-size: 0.9rem; color: #6b7280;">
+                    <strong>Порт:</strong> 5000 | <strong>Статус:</strong> Работает
+                </div>
+            </div>
+            
+            <!-- React проект -->
+            <div class="project-card react-card">
+                <span class="status-badge status-live">● Активен</span>
+                <div class="project-icon">⚛️</div>
+                <h2>React Frontend App</h2>
+                <p class="project-description">
+                    Современное SPA приложение на React с Vite, 
+                    TypeScript и Material-UI. Быстрое и отзывчивое.
+                </p>
+                
+                <div class="tech-stack">
+                    <span class="tech-tag react-tag">React 18</span>
+                    <span class="tech-tag react-tag">TypeScript</span>
+                    <span class="tech-tag react-tag">Vite</span>
+                    <span class="tech-tag react-tag">Tailwind CSS</span>
+                    <span class="tech-tag react-tag">Docker</span>
+                </div>
+                
+                <button class="btn react-btn" onclick="openProject('/react')">
+                    Открыть React приложение
+                </button>
+                
+                <div style="margin-top: 15px; font-size: 0.9rem; color: #6b7280;">
+                    <strong>Порт:</strong> 3000 | <strong>Статус:</strong> Работает
+                </div>
+            </div>
+            
+            <!-- Можно добавить больше проектов -->
+            <div class="project-card">
+                <div class="project-icon">📊</div>
+                <h2>Админ-панель</h2>
+                <p class="project-description">
+                    Панель управления для мониторинга всех проектов
+                </p>
+                <button class="btn" onclick="openProject('/admin')">
+                    Открыть админку
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openProject(path) {
+            // Открываем в новом окне
+            window.open(path, '_blank');
+            
+            // Или в этом же окне
+            // window.location.href = path;
+        }
+        
+        // Динамическая проверка статуса проектов
+        async function checkProjectStatus() {
+            const projects = [
+                { name: 'flask', url: '/flask/health' },
+                { name: 'react', url: '/react' }
+            ];
+            
+            for (const project of projects) {
+                try {
+                    const response = await fetch(project.url, { 
+                        method: 'HEAD',
+                        mode: 'no-cors' // Для обхода CORS
+                    });
+                    console.log(`${project.name} доступен`);
+                } catch (error) {
+                    console.log(`${project.name} недоступен`);
+                }
+            }
+        }
+        
+        // Проверяем статус при загрузке
+        window.addEventListener('load', checkProjectStatus);
+    </script>
+</body>
+</html>
