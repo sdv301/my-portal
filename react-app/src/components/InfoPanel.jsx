@@ -36,8 +36,8 @@ const InfoPanel = ({ district, filters = {}, isFiltersExpanded, onPanelToggle })
 
         // ДОБАВЛЕНО: Передаем даты с фильтра в запрос
         const [infoRes, dataRes] = await Promise.allSettled([
-          fetch(`http://localhost:5000/api/district/${encodedId}`),
-          fetch(`http://localhost:5000/api/district/${encodedId}/data?startDate=${start}&endDate=${end}`)
+          fetch(`/api/district/${encodedId}`),
+          fetch(`/api/district/${encodedId}/data?startDate=${start}&endDate=${end}`)
         ]);
 
         if (infoRes.status === 'fulfilled' && infoRes.value.ok) setDistrictInfo(await infoRes.value.json());

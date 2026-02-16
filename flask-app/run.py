@@ -1,8 +1,10 @@
 # run.py
 from app import create_app
 import os
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = create_app()
+metrics = PrometheusMetrics(app)
 
 if __name__ == '__main__':
     # print("=" * 50)

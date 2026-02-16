@@ -13,7 +13,7 @@ const Filters = ({ filters, setFilters, selectedDistrict, onPanelToggle }) => {
   const [alertMsg, setAlertMsg] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/districts')
+    fetch('/api/districts')
       .then(res => res.json())
       .then(data => setDistricts(data))
       .catch(err => console.error(err));
@@ -37,12 +37,12 @@ const Filters = ({ filters, setFilters, selectedDistrict, onPanelToggle }) => {
     setAlertMsg(null); // Сбрасываем старое сообщение
     
     try {
-      const res = await fetch(`http://localhost:5000/api/check-export?startDate=${exportStart}&endDate=${exportEnd}&district_id=${exportDistrict}`);
+      const res = await fetch(`/api/check-export?startDate=${exportStart}&endDate=${exportEnd}&district_id=${exportDistrict}`);
       const data = await res.json();
       
       if (data.hasData) {
         // Данные есть - начинаем скачивание
-        window.location.href = `http://localhost:5000/api/export-excel?startDate=${exportStart}&endDate=${exportEnd}&district_id=${exportDistrict}`;
+        window.location.href = `/api/export-excel?startDate=${exportStart}&endDate=${exportEnd}&district_id=${exportDistrict}`;
       } else {
         // Данных нет - показываем алерт и подставляем последние доступные
         const latest = data.latest_year;

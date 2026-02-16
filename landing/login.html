@@ -277,7 +277,7 @@
             if (validUsers[username] && validUsers[username] === password) {
                 // Успешный вход
                 localStorage.setItem('portal_auth', 'true');
-                localStorage.setItem('portal_user', username);
+                localStorage.setItem('portal_user', 'fake-jwt-token');
                 
                 if (remember) {
                     const expiry = new Date();
@@ -285,7 +285,7 @@
                     localStorage.setItem('portal_expiry', expiry.toISOString());
                 }
                 
-                // Добавляем JWT токен (в реальности получаем с сервера)
+                // Генерируем фейковый токен
                 const fakeToken = btoa(JSON.stringify({
                     user: username,
                     role: username === 'admin' ? 'admin' : 'user',
@@ -293,9 +293,22 @@
                 }));
                 localStorage.setItem('portal_token', fakeToken);
                 
-                // Перенаправляем на главную
-                window.location.href = '/';
+                // --- ЛОГИКА ПЕРЕНАПРАВЛЕНИЯ (ИЗМЕНЕНО) ---
+                // Проверяем, есть ли параметр target в URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const target = urlParams.get('target');
+
+                if (target === 'admin') {
+                    // Если цель - админка, идем туда
+                    window.location.href = '/admin.html';
+                } else {
+                    // Иначе на главную
+                    window.location.href = '/';
+                }
+                // ------------------------------------------
+
             } else {
+            
                 // Ошибка входа
                 document.getElementById('errorMessage').style.display = 'block';
                 document.getElementById('btnText').style.display = 'inline';

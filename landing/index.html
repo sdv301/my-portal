@@ -3,302 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Портал моих проектов</title>
+    <title>Портал проектов</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+        :root {
+            --primary: #4f46e5;
+            --text: #f1f5f9;
+            --bg: #0f0f0f;
+            --card-bg: rgba(30, 30, 50, 0.6);
+            --accent: #6366f1;
+            --glow: rgba(79, 70, 229, 0.6);
         }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+            animation: fadeIn 1.5s ease-in-out; /* Плавное появление всей страницы */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+        
+        /* Hero Section с анимированным фоном */
+        .hero {
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
-        }
-        
-        .portal-container {
-            max-width: 1200px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .portal-header {
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            color: white;
-            padding: 40px;
+            justify-content: center;
             text-align: center;
-        }
-        
-        .portal-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .portal-header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-        
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            padding: 40px;
-        }
-        
-        .project-card {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 30px;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
             position: relative;
             overflow: hidden;
+            padding: 100px 0;
         }
         
-        .project-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
-            border-color: #6366f1;
-        }
-        
-        .project-card::before {
+        .hero::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 6px;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulseGlow 4s infinite alternate; /* Пульсирующее свечение */
+        }
+
+        /* Анимированные фоновые частицы (точки) */
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 100%;
             height: 100%;
-            background: #6366f1;
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: moveDots 20s linear infinite;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        @keyframes moveDots {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 100px; }
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
         }
         
-        .flask-card::before {
-            background: #10b981;  /* Зеленый для Python/Flask */
+        /* Логотип */
+        .logo-container { margin-bottom: 30px; perspective: 1000px; }
+        .hero-logo {
+            width: 180px; height: 180px; object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(79, 70, 229, 0.4));
+            animation: float 6s ease-in-out infinite, rotateGlow 8s infinite alternate;
         }
-        
-        .react-card::before {
-            background: #3b82f6;  /* Синий для React */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
         }
-        
-        .tech-stack {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
+        @keyframes rotateGlow {
+            0% { filter: drop-shadow(0 0 20px rgba(79, 70, 229, 0.4)); }
+            100% { filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.9)); }
         }
-        
-        .tech-tag {
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
+
+        .hero-content {
+            animation: slideUp 1.2s ease-out; /* Появление контента снизу */
+            position: relative;
+            z-index: 2;
         }
-        
-        .flask-tag {
-            background: #d1fae5;
-            color: #065f46;
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
         }
-        
-        .react-tag {
-            background: #dbeafe;
-            color: #1e40af;
+
+        .hero-content h1 {
+            font-size: 5rem; font-weight: 800; margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, var(--primary), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            line-height: 1.1;
+            animation: gradientMove 6s linear infinite; /* Переливающийся градиент */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem; color: var(--accent); text-transform: uppercase;
+            letter-spacing: 3px; margin-bottom: 20px; font-weight: 700;
+            animation: fadeInLetter 1.8s;
+        }
+
+        .hero-content p {
+            font-size: 1.3rem; max-width: 700px; margin: 0 auto 40px;
+            opacity: 0.8; color: #cbd5e1;
+            animation: fadeIn 2s;
         }
         
         .btn {
-            display: inline-block;
-            padding: 12px 28px;
-            background: #4f46e5;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
+            padding: 14px 32px; background: var(--primary); color: white;
+            border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; text-decoration: none;
+            display: inline-block; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
-        
-        .btn:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
-        }
-        
-        .flask-btn {
-            background: #10b981;
-        }
-        
-        .flask-btn:hover {
-            background: #0da271;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
-        }
-        
-        .react-btn {
-            background: #3b82f6;
-        }
-        
-        .react-btn:hover {
-            background: #2563eb;
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-        }
-        
-        .project-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-        
-        .project-description {
-            color: #64748b;
-            line-height: 1.6;
-            margin: 15px 0;
-        }
-        
-        .status-badge {
+
+        /* Эффект бегущей подсветки на кнопке */
+        .btn::before {
+            content: '';
             position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.5); background: #4338ca;
+        }
+
+        /* Navigation с анимацией */
+        nav { 
+            position: fixed; 
+            top: 30px; 
+            right: 40px; 
+            z-index: 100;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+
+        nav a {
+            color: white; text-decoration: none; font-weight: 500;
+            padding: 10px 25px; background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px; transition: all 0.3s; display: flex;
+            align-items: center; gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(79, 70, 229, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: -1;
+        }
+
+        nav a:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        nav a:hover { 
+            background: rgba(255,255,255,0.15); 
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--glow);
         }
         
-        .status-live {
-            background: #dcfce7;
-            color: #166534;
+        /* Projects Section */
+        .projects { padding: 100px 0; background: var(--bg); }
+        .section-title {
+            text-align: center; font-size: 3rem; margin-bottom: 80px;
+            font-weight: 700; color: white;
+            position: relative;
+            display: inline-block;
+            /* left: center; */
+            transform: translateX(-50%);
+        }
+
+        /* Анимированная линия под заголовком */
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: lineWidth 3s infinite alternate;
+        }
+
+        @keyframes lineWidth {
+            0% { width: 50%; left: 25%; }
+            100% { width: 80%; left: 10%; }
+        }
+
+        .projects-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 40px;
+        }
+        
+        .project-card {
+            background: var(--card-bg); border-radius: 24px; overflow: hidden;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        /* Пульсирующая рамка при наведении */
+        .project-card:hover {
+            transform: translateY(-15px); 
+            border-color: var(--primary);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(79, 70, 229, 0.2);
+            animation: borderPulse 1.5s infinite;
+        }
+
+        @keyframes borderPulse {
+            0% { box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(79, 70, 229, 0.2); }
+            50% { box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 4px rgba(79, 70, 229, 0.5); }
+            100% { box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        }
+        
+        .project-img-wrapper {
+            height: 250px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+        }
+
+        .project-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease, filter 0.6s ease;
+            filter: grayscale(20%) brightness(0.9);
+        }
+
+        .project-card:hover .project-img {
+            transform: scale(1.1);
+            filter: grayscale(0%) brightness(1.1);
+        }
+
+        .project-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(15,15,15,0.9));
+            z-index: 1;
+        }
+        
+        .project-content { padding: 40px; position: relative; z-index: 2; }
+        .project-content h3 { 
+            font-size: 1.8rem; margin-bottom: 15px; color: white;
+            transition: transform 0.3s, color 0.3s;
+        }
+
+        .project-card:hover .project-content h3 {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .project-content p { color: #94a3b8; margin-bottom: 25px; min-height: 50px; }
+        
+        footer { 
+            padding: 60px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); 
+            color: #64748b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer p {
+            animation: footerFade 2s;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes footerFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Анимированный фон в футере */
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79,70,229,0.1), transparent);
+            animation: shine 8s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -50%; }
+            100% { left: 50%; }
         }
         
         @media (max-width: 768px) {
-            .projects-grid {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-            
-            .portal-header {
-                padding: 30px 20px;
-            }
+            .hero-content h1 { font-size: 3.5rem; }
+            .projects-grid { grid-template-columns: 1fr; }
+            nav { top: 20px; right: 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="portal-container">
-        <div class="portal-header">
-            <h1>🚀 Портал моих проектов</h1>
-            <p>Выберите проект для перехода к нему</p>
-        </div>
-        
-        <div class="projects-grid">
-            <!-- Flask проект -->
-            <div class="project-card flask-card">
-                <span class="status-badge status-live">● Активен</span>
-                <div class="project-icon">🐍</div>
-                <h2>Flask API Backend</h2>
-                <p class="project-description">
-                    Полноценный бэкенд на Python Flask с REST API, 
-                    базой данных и аутентификацией. Идеально для MVP.
-                </p>
-                
-                <div class="tech-stack">
-                    <span class="tech-tag flask-tag">Python</span>
-                    <span class="tech-tag flask-tag">Flask</span>
-                    <span class="tech-tag flask-tag">SQLAlchemy</span>
-                    <span class="tech-tag flask-tag">JWT</span>
-                    <span class="tech-tag flask-tag">Docker</span>
-                </div>
-                
-                <button class="btn flask-btn" onclick="openProject('/flask')">
-                    Открыть Flask приложение
-                </button>
-                
-                <div style="margin-top: 15px; font-size: 0.9rem; color: #6b7280;">
-                    <strong>Порт:</strong> 5000 | <strong>Статус:</strong> Работает
-                </div>
-            </div>
-            
-            <!-- React проект -->
-            <div class="project-card react-card">
-                <span class="status-badge status-live">● Активен</span>
-                <div class="project-icon">⚛️</div>
-                <h2>React Frontend App</h2>
-                <p class="project-description">
-                    Современное SPA приложение на React с Vite, 
-                    TypeScript и Material-UI. Быстрое и отзывчивое.
-                </p>
-                
-                <div class="tech-stack">
-                    <span class="tech-tag react-tag">React 18</span>
-                    <span class="tech-tag react-tag">TypeScript</span>
-                    <span class="tech-tag react-tag">Vite</span>
-                    <span class="tech-tag react-tag">Tailwind CSS</span>
-                    <span class="tech-tag react-tag">Docker</span>
-                </div>
-                
-                <button class="btn react-btn" onclick="openProject('/react')">
-                    Открыть React приложение
-                </button>
-                
-                <div style="margin-top: 15px; font-size: 0.9rem; color: #6b7280;">
-                    <strong>Порт:</strong> 3000 | <strong>Статус:</strong> Работает
-                </div>
-            </div>
-            
-            <!-- Можно добавить больше проектов -->
-            <div class="project-card">
-                <div class="project-icon">📊</div>
-                <h2>Админ-панель</h2>
-                <p class="project-description">
-                    Панель управления для мониторинга всех проектов
-                </p>
-                <button class="btn" onclick="openProject('/admin')">
-                    Открыть админку
-                </button>
-            </div>
-        </div>
-    </div>
+    <nav>
+        <a href="#" onclick="openAdmin()"><i class="fas fa-user-shield"></i> Админ-панель</a>
+    </nav>
 
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
+                <div class="logo-container">
+                    <img src="1.png" alt="Portal Logo" class="hero-logo">
+                </div>
+                <div class="hero-subtitle">Система мониторинга и управления</div>
+                <h1>ПОРТАЛ ПРОЕКТОВ</h1>
+                <p>Единая точка входа для Flask API, React Frontend и инструментов аналитики.</p>
+                <a href="#" onclick="openAdmin()" class="btn">Начать работу</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="projects">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Активные модули</h2>
+            <div class="projects-grid">
+                
+                <div class="project-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="project-img-wrapper">
+                        <img src="3.png" alt="React App" class="project-img">
+                        <div class="project-overlay"></div>
+                    </div>
+                    <div class="project-content">
+                        <h3>Мат.резерв</h3>
+                        <p>Frontend приложение на базе Vite. Мгновенная загрузка, современный UI и полная интеграция с API.</p>
+                        <a href="http://10.50.57.107:3002" target="_blank" class="btn" style="background: #3b82f6;">Открыть</a>
+                    </div>
+                </div>
+                
+                <div class="project-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="project-img-wrapper">
+                        <img src="2.png" alt="Flask API" class="project-img">
+                        <div class="project-overlay"></div>
+                    </div>
+                    <div class="project-content">
+                        <h3>Топливообеспечение</h3>
+                        <p>Надежный Backend сервер. RESTful архитектура, работа с базой данных PostgreSQL и JWT авторизация.</p>
+                        <a href="http://10.50.57.107:5000" target="_blank" class="btn" style="background: #10b981;">Открыть</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Разработано в Министерстве по делам гражданской обороны и обеспечению безопасности жизнедеятельности населения РС(Я)</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        function openProject(path) {
-            // Открываем в новом окне
-            window.open(path, '_blank');
-            
-            // Или в этом же окне
-            // window.location.href = path;
+        AOS.init({ once: true, duration: 800 });
+        function openAdmin() {
+            localStorage.removeItem('portal_auth');
+            localStorage.removeItem('portal_token');
+            localStorage.removeItem('portal_user');
+            window.location.href = '/login.html?target=admin';
         }
-        
-        // Динамическая проверка статуса проектов
-        async function checkProjectStatus() {
-            const projects = [
-                { name: 'flask', url: '/flask/health' },
-                { name: 'react', url: '/react' }
-            ];
-            
-            for (const project of projects) {
-                try {
-                    const response = await fetch(project.url, { 
-                        method: 'HEAD',
-                        mode: 'no-cors' // Для обхода CORS
-                    });
-                    console.log(`${project.name} доступен`);
-                } catch (error) {
-                    console.log(`${project.name} недоступен`);
-                }
-            }
-        }
-        
-        // Проверяем статус при загрузке
-        window.addEventListener('load', checkProjectStatus);
     </script>
 </body>
 </html>

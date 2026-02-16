@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+
 // Центроиды районов (рассчитаны из твоего GeoJSON — lon, lat перевернуты для Leaflet [lat, lon])
 const centroids = {
   'Абыйский район': [67.56601963353482, 143.55304865273894],
@@ -99,7 +100,7 @@ const Map = ({ filters, onDistrictClick, setDistrictData }) => {
       maxZoom={12}
     >
       <TileLayer
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        url="/tiles/yakutia/{z}/{x}/{y}.png"
       />
       <SetBounds bounds={yakutiaBounds} />
 

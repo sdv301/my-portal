@@ -16,7 +16,7 @@ function App() {
 
   // ДОБАВЛЕНО: Автоматически тянем самую старую и новую дату из базы при запуске
   useEffect(() => {
-    fetch('http://localhost:5000/api/date-range')
+    fetch('/api/date-range')
       .then(res => res.json())
       .then(data => {
         if (data.min_year && data.max_year) {

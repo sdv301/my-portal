@@ -1,48 +1,43 @@
 version: '3.8'
 
 services:
-  # 1. Основной портал (Nginx)
-  # Убраны внешние порты, чтобы не конфликтовать с Traefik. 
-  # Добавлены метки (labels), чтобы Traefik мог перенаправлять трафик.
+  # 1. Основной портал (Теперь это главный вход)
   portal:
     build: ./landing
+    ports:
+      - "8080:80"   # Сайт будет доступен на http://localhost:8080
     volumes:
       - ./landing:/usr/share/nginx/html
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./landing/nginx.conf:/etc/nginx/conf.d/default.conf # Пробрасываем исправленный конфиг
     environment:
       - ADMIN_USER=${ADMIN_USER}
       - ADMIN_PASS_HASH=${ADMIN_PASS_HASH}
       - JWT_SECRET=${JWT_SECRET}
     networks:
       - portal-network
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.portal.rule=Host(`localhost`)"
-      - "traefik.http.entrypoints=web"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    depends_on:
+      - flask-app
+      - react-app
 
   # 2. Flask API
   flask-app:
     build: ./flask-app
-    # Переопределяем команду, чтобы папки создавались и в контейнере
-    command: >
-      sh -c "mkdir -p uploads reports_output report_templates && 
-             gunicorn --bind 0.0.0.0:5000 run:app"
+    # Запуск через gunicorn
+    command: gunicorn --bind 0.0.0.0:5000 run:app
+    expose:
+      - "5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${FLASK_SECRET_KEY}
+      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/portal_db
     networks:
       - portal-network
       - backend-network
     depends_on:
-      - redis
       - postgres
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.flask.rule=Host(`flask.localhost`)"
-      - "traefik.http.services.flask.loadbalancer.server.port=5000"
+      - redis
+    ports:
+      - "5000:5000"
 
   # 3. React App
   react-app:
@@ -51,13 +46,11 @@ services:
       args:
         - NODE_ENV=production
     expose:
-      - "80" # Внутри образа nginx слушает 80
+      - "80"
     networks:
       - portal-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.react.rule=Host(`react.localhost`)"
-      - "traefik.http.services.react.loadbalancer.server.port=80"
+    ports:
+      - "3002:80"
 
   # 4. Postgres
   postgres:
@@ -82,23 +75,19 @@ services:
     networks:
       - backend-network
 
-  # 6. Prometheus
+  # 6. Мониторинг (Prometheus)
   prometheus:
     image: prom/prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
     ports:
       - "9090:9090"
     networks:
       - monitoring-network
       - portal-network
-    restart: unless-stopped
 
-  # 7. Grafana
+  # 7. Мониторинг (Grafana)
   grafana:
     image: grafana/grafana
     environment:
@@ -108,45 +97,30 @@ services:
     networks:
       - monitoring-network
       - portal-network
-    depends_on:
-      - prometheus
-    restart: unless-stopped
 
-  # 8. Traefik (Reverse Proxy)
-  # Изменены порты для Windows, чтобы избежать конфликтов.
-  # Исправлен путь к docker.sock для корректной работы на Windows.
-  traefik:
-    image: traefik:v2.10
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-    ports:
-      - "8080:80"      # Доступ к порталу: http://localhost:8080
-      - "8443:443"
-    volumes:
-      # Важно для Windows/Docker Desktop: используем двойной слэш
-      - //var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt:/letsencrypt
-    networks:
-      - portal-network
-    restart: unless-stopped
-
-  # 9. Portainer
+  # 8. Portainer
   portainer:
     image: portainer/portainer-ce:latest
     command: -H unix:///var/run/docker.sock
-    restart: unless-stopped
     ports:
       - "9000:9000"
     volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
+      # Для Portainer оставляем так, он обычно справляется лучше Traefik
+      - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     networks:
       - portal-network
 
+  tileserver:
+    image: maptiler/tileserver-gl
+    volumes:
+      # Важно: путь слева - где лежит ваш файл yakutia.mbtiles на компьютере
+      - ./react-app/public/tiles:/data 
+    ports:
+      # Слева - внешний порт (новый), справа - внутренний (не меняем)
+      - "8085:8080"
+    command: "-p 8080"
+  
 networks:
   portal-network:
     driver: bridge
