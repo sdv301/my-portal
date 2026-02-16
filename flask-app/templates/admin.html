@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Система отчетов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #6c757d;
+            --info: #17a2b8;
+            --danger: #dc3545;
+        }
+        
+        .admin-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+        
+        .test-btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            padding: 1rem;
+            font-weight: 500;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/admin">
+                <i class="bi bi-shield-check"></i> Админ-панель
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house"></i> Главная
+                </a>
+                
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Заголовок -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-5 fw-bold">
+                    <i class="bi bi-tools"></i> Инструменты администрирования
+                </h1>
+                <p class="lead text-muted">Тестирование и диагностика системы отчетности</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Левая колонка - инструменты -->
+            <div class="col-lg-6">
+                <!-- Карточка тестирования -->
+                <div class="admin-card card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-cpu"></i> Тестирование системы
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-info test-btn" onclick="testParser()">
+                            <i class="bi bi-file-earmark-break"></i> Тест парсера файла
+                        </button>
+                        
+                        <button class="btn btn-info test-btn" onclick="checkDbData()">
+                            <i class="bi bi-database-check"></i> Проверка данных в базе
+                        </button>
+                        
+                        <button class="btn btn-info test-btn" onclick="debugTemplate()">
+                            <i class="bi bi-file-code"></i> Отладка структуры шаблона
+                        </button>
+                        
+                        <button class="btn btn-success test-btn" onclick="generateFromExisting()">
+                            <i class="bi bi-gear"></i> Создать отчет из данных базы
+                        </button>
+                        
+                        <button class="btn btn-warning test-btn" onclick="checkSystemStatus()">
+                            <i class="bi bi-heart-pulse"></i> Статус системы
+                        </button>
+
+                        <div id="testResults" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка - данные -->
+            <div class="col-lg-6">
+                <!-- Последние файлы -->
+                <div class="admin-card card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> Последние файлы
+                            <span class="badge bg-light text-dark float-end">{{ recent_files|length }}</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_files %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Файл</th>
+                                        <th>Компания</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for file in recent_files %}
+                                    <tr>
+                                        <td>
+                                            <small class="text-muted">{{ file.filename|truncate(20) }}</small>
+                                        </td>
+                                        <td>{{ file.company_name }}</td>
+                                        <td>
+                                            {% if file.status == 'processed' %}
+                                                <span class="badge bg-success">✓</span>
+                                            {% elif file.status == 'error' %}
+                                                <span class="badge bg-danger">✗</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">…</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center">Нет загруженных файлов</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Компании -->
+                <div class="admin-card card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-building"></i> Компании в системе
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for company in companies %}
+                            <div class="col-6 mb-2">
+                                <span class="badge bg-light text-dark">
+                                    {{ company.name }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Endpoints -->
+                <div class="admin-card card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-link"></i> API Endpoints
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/api/companies" class="btn btn-outline-success btn-sm" target="_blank">
+                                /api/companies
+                            </a>
+                            <a href="/api/recent-files" class="btn btn-outline-success btn-sm" target="_blank">
+                                /api/recent-files
+                            </a>
+                            <a href="/api/stats" class="btn btn-outline-success btn-sm" target="_blank">
+                                /api/stats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Статус системы -->
+                <div class="admin-card card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up"></i> Быстрая статистика
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="quickStats">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Файлов в базе:</span>
+                                <strong>{{ recent_files|length }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Компаний:</span>
+                                <strong>{{ companies|length }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Последнее обновление:</span>
+                                <strong>{{ now.strftime('%H:%M:%S') }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const alertClass = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'info': 'alert-info',
+                'warning': 'alert-warning'
+            }[type] || 'alert-info';
+            
+            resultsDiv.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function showLoading() {
+            showResult(`
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    Выполняется...
+                </div>
+            `, 'info');
+        }
+
+        async function testParser() {
+            showLoading();
+            try {
+                const response = await fetch('/admin/test-parse');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data_extracted || {};
+                    showResult(`
+                        <strong>✓ Парсер работает корректно</strong>
+                        <div class="mt-2">
+                            <p><strong>Файл:</strong> ${result.filename}</p>
+                            <p><strong>Компания:</strong> ${result.company}</p>
+                            <p><strong>Извлечено данных:</strong></p>
+                            <ul>
+                                <li>Лист 1: ${data.sheet1 || 0} записей</li>
+                                <li>Лист 2: ${data.sheet2 || 0} показателей</li>
+                                <li>Лист 3: ${data.sheet3 || 0} записей</li>
+                                <li>Лист 4: ${data.sheet4 || 0} записей</li>
+                                <li>Лист 5: ${data.sheet5 || 0} записей</li>
+                            </ul>
+                        </div>
+                    `, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showResult(`<strong>❌ Ошибка:</strong> ${error.message}`, 'error');
+            }
+        }
+
+        async function checkDbData() {
+            showLoading();
+            try {
+                const response = await fetch('/admin/check-db-data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const summary = result.summary || {};
+                    showResult(`
+                        <strong>✓ Данные базы проверены</strong>
+                        <div class="mt-2">
+                            <p><strong>Статистика:</strong></p>
+                            <ul>
+                                <li>Компаний: ${summary.companies || 0}</li>
+                                <li>Файлов: ${summary.uploaded_files || 0}</li>
+                                <li>Записей Sheet1: ${summary.sheet1 || 0}</li>
+                                <li>Записей Sheet3: ${summary.sheet3 || 0}</li>
+                                <li>Записей Sheet5: ${summary.sheet5 || 0}</li>
+                            </ul>
+                        </div>
+                    `, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showResult(`<strong>❌ Ошибка:</strong> ${error.message}`, 'error');
+            }
+        }
+
+        async function debugTemplate() {
+            showLoading();
+            try {
+                const response = await fetch('/admin/debug-template');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`
+                        <strong>✓ Структура шаблона выведена в консоль сервера</strong>
+                        <p class="mt-2">Проверьте консоль где запущен сервер для просмотра структуры шаблона.</p>
+                    `, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showResult(`<strong>❌ Ошибка:</strong> ${error.message}`, 'error');
+            }
+        }
+
+        async function generateFromExisting() {
+            showLoading();
+            try {
+                const response = await fetch('/admin/generate-from-existing');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`
+                        <strong>✓ Отчет успешно создан!</strong>
+                        <div class="mt-2">
+                            <p>${result.message}</p>
+                            <a href="${result.download_url}" class="btn btn-success btn-sm">
+                                <i class="bi bi-download"></i> Скачать отчет
+                            </a>
+                        </div>
+                    `, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showResult(`<strong>❌ Ошибка:</strong> ${error.message}`, 'error');
+            }
+        }
+
+        async function checkSystemStatus() {
+                showLoading();
+                try {
+                    const response = await fetch('/admin/system-status');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const status = result.status || {};
+                        const db = status.database || {};
+                        const fs = status.filesystem || {};
+                        
+                        // Форматируем timestamp
+                        const timestamp = new Date(status.timestamp).toLocaleString('ru-RU');
+                        
+                        showResult(`
+                            <div class="system-status">
+                                <h5><i class="bi bi-heart-pulse"></i> Статус системы</h5>
+                                
+                                <div class="row mt-3">
+                                    <!-- База данных -->
+                                    <div class="col-md-6">
+                                        <div class="card status-card">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="bi bi-database"></i> База данных
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="status-item">
+                                                    <span class="label">Всего файлов:</span>
+                                                    <span class="value badge bg-secondary">${db.files_total || 0}</span>
+                                                </div>
+                                                <div class="status-item">
+                                                    <span class="label">Обработано файлов:</span>
+                                                    <span class="value badge bg-success">${db.files_processed || 0}</span>
+                                                </div>
+                                                <div class="status-item">
+                                                    <span class="label">Компаний в системе:</span>
+                                                    <span class="value badge bg-info">${db.companies || 0}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Файловая система -->
+                                    <div class="col-md-6">
+                                        <div class="card status-card">
+                                            <div class="card-header bg-success text-white">
+                                                <i class="bi bi-folder"></i> Файловая система
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="status-item">
+                                                    <span class="label">Шаблон отчета:</span>
+                                                    <span class="value">
+                                                        ${fs.template_exists ? 
+                                                            '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Найден</span>' : 
+                                                            '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Отсутствует</span>'}
+                                                    </span>
+                                                </div>
+                                                <div class="status-item">
+                                                    <span class="label">Папка загрузок:</span>
+                                                    <span class="value">
+                                                        ${fs.uploads_exists ? 
+                                                            '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Существует</span>' : 
+                                                            '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Отсутствует</span>'}
+                                                    </span>
+                                                </div>
+                                                <div class="status-item">
+                                                    <span class="label">Файлов в uploads:</span>
+                                                    <span class="value badge bg-warning">${fs.uploads_files || 0}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 p-3 bg-light rounded">
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> Последнее обновление: ${timestamp}
+                                    </small>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="showRawJson()">
+                                        <i class="bi bi-code-slash"></i> Показать сырой JSON
+                                    </button>
+                                </div>
+                                
+                                <div id="rawJson" class="mt-3" style="display: none;">
+                                    <pre class="bg-dark text-light p-3 rounded">${JSON.stringify(result, null, 2)}</pre>
+                                </div>
+                            </div>
+                        `, 'success');
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (error) {
+                    showResult(`<strong>❌ Ошибка:</strong> ${error.message}`, 'error');
+                }
+            }
+
+            function showRawJson() {
+                const rawJsonDiv = document.getElementById('rawJson');
+                if (rawJsonDiv.style.display === 'none') {
+                    rawJsonDiv.style.display = 'block';
+                } else {
+                    rawJsonDiv.style.display = 'none';
+                }
+            }
+    </script>
+</body>
+</html>

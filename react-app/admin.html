@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Управление резервами - Карта Якутии</title>
+  <style>
+    body { 
+      font-family: -apple-system, system-ui, sans-serif; 
+      background: rgba(15, 23, 42, 0.65); /* Темное стекло */
+      margin: 0; 
+      padding: 20px;
+      color: #f1f5f9;
+    }
+    .container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+    }
+    .back-btn {
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px;
+      margin-bottom: 20px; 
+      padding: 10px 20px; 
+      background: #38bdf8; 
+      color: #0f172a; 
+      text-decoration: none; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .back-btn:hover {
+      background: #0ea5e9;
+      transform: translateY(-2px);
+    }
+    .block { 
+      background: rgba(30, 41, 59, 0.85); 
+      padding: 25px; 
+      border-radius: 12px; 
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+    }
+    h2 { margin-top: 0; color: #38bdf8; font-size: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    h3 { margin-top: 0; color: #f1f5f9; font-size: 1.2rem; }
+    p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
+    
+    .form-row { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; align-items: center;}
+    
+    input[type="file"] {
+      background: rgba(0,0,0,0.3);
+      color: #f1f5f9;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      flex: 1;
+    }
+    
+    .btn { 
+      background: #38bdf8; 
+      color: #0f172a; 
+      border: none; 
+      padding: 10px 20px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #0ea5e9; }
+    .btn.export { background: #10b981; color: white; }
+    .btn.export:hover { background: #059669; }
+
+    #notification {
+      position: fixed; top: 20px; right: 20px;
+      padding: 15px 25px; border-radius: 8px; color: white;
+      font-weight: bold; opacity: 0; transition: opacity 0.3s;
+      pointer-events: none; z-index: 1000;
+    }
+    .success { background: #10b981; }
+    .error { background: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-btn">⬅ Вернуться на карту</a>
+    
+    <h2>⚙️ Управление Материальными Резервами (МЦ)</h2>
+
+    <div class="block">
+      <h3>📥 Импорт ведомости выдачи (Excel/CSV)</h3>
+      <p>Загрузите файл со сводной таблицей выдачи имущества по районам.<br>
+         Система автоматически распределит товары по категориям и привяжет их к районам на карте.</p>
+      <div class="form-row">
+        <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
+        <button class="btn" onclick="importExcel()">Загрузить в базу</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>📤 Экспорт данных в Excel</h3>
+      <p>Выгрузить текущую базу данных в виде удобной таблицы (все выданные резервы по районам).</p>
+      <div class="form-row">
+        <button class="btn export" onclick="exportExcel()">📥 Скачать отчет (Excel)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification"></div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+
+    function notify(text, isErr = false) {
+      const el = document.getElementById('notification');
+      el.textContent = text;
+      el.className = isErr ? 'error' : 'success';
+      el.style.opacity = 1;
+      setTimeout(() => el.style.opacity = 0, 3000);
+    }
+
+    async function importExcel() {
+      const fileInput = document.getElementById('excelFile');
+      const file = fileInput.files[0];
+      if (!file) return notify('Пожалуйста, выберите файл', true);
+
+      notify('Обработка файла, подождите...', false);
+      const fd = new FormData();
+      fd.append('file', file);
+
+      try {
+        const res = await fetch(`${API}/upload-excel`, { method: 'POST', body: fd });
+        const result = await res.json();
+        
+        if (res.ok && result.success) {
+          notify(result.message || 'Данные успешно загружены!');
+          fileInput.value = ''; // Очищаем инпут
+        } else {
+          notify(result.error || 'Ошибка при загрузке', true);
+        }
+      } catch (e) {
+        notify('Ошибка связи с сервером', true);
+      }
+    }
+
+    function exportExcel() {
+      window.location.href = `${API}/export-excel`;
+    }
+  </script>
+</body>
+</html>

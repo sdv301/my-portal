@@ -1,0 +1,58 @@
+/* src/App.css */
+.app {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-container {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Кастомные стили для Leaflet в темной теме */
+.leaflet-container {
+  background: var(--bg-dark) !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background: var(--panel-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  color: var(--text-main) !important;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px !important;
+}
+
+/* src/App.css */
+
+/* Скрытая кнопка админки */
+.hidden-admin-btn {
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  font-size: 16px;
+  text-decoration: none;
+  opacity: 0.15; /* Очень прозрачная */
+  z-index: 9999;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  filter: grayscale(100%);
+}
+
+.hidden-admin-btn:hover {
+  opacity: 1; /* Проявляется при наведении */
+  filter: grayscale(0%);
+  transform: rotate(90deg); /* Крутится при наведении */
+}
