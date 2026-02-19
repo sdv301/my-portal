@@ -19,6 +19,22 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
+// --- ДОБАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ---
+
+// 1. Указываем папку со статикой (результат сборки фронтенда)
+// В Dockerfile мы копируем билд в папку /app/dist
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// 2. Обработка маршрутов React (чтобы при обновлении страницы не было 404)
+app.get('*', (req, res, next) => {
+  // Если запрос начинается с /api, пропускаем его к обработчикам API ниже
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  // Все остальные запросы отдают index.html
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
 const dbPath = path.resolve(__dirname, '../data.sqlite');
 const db = new sqlite3.Database(dbPath);
 

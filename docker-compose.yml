@@ -111,15 +111,6 @@ services:
     networks:
       - portal-network
 
-  tileserver:
-    image: maptiler/tileserver-gl
-    volumes:
-      # Важно: путь слева - где лежит ваш файл yakutia.mbtiles на компьютере
-      - ./react-app/public/tiles:/data 
-    ports:
-      # Слева - внешний порт (новый), справа - внутренний (не меняем)
-      - "8085:8080"
-    command: "-p 8080"
   
 networks:
   portal-network:
