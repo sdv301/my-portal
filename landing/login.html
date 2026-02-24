@@ -1,354 +1,804 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в портал</title>
+    <title>Вход — Портал проектов</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+            --accent: #818cf8;
+            --sky: #38bdf8;
+            --emerald: #10b981;
             --danger: #ef4444;
             --success: #10b981;
+            --bg: #030712;
+            --surface: rgba(15, 23, 42, 0.7);
+            --border: rgba(99, 102, 241, 0.2);
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.04);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow: hidden;
         }
-        
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
+
+        /* ─── Canvas Particles ─── */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
-        
+
+        /* ─── Radial Glow ─── */
+        .glow-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 700px;
+            height: 700px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: glowPulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(0.85);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        /* ─── Login Card ─── */
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: var(--surface);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(99, 102, 241, 0.08);
+            animation: cardIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: box-shadow 0.4s ease;
+        }
+
+        .login-card:hover {
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 80px rgba(99, 102, 241, 0.12);
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.94);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--sky), var(--primary));
+            background-size: 200% 100%;
+            border-radius: 24px 24px 0 0;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* ─── Logo Area ─── */
         .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
-        
+
+        .logo-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 600px;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            box-shadow: 0 8px 25px var(--primary-glow);
+            animation: logoFloat 3s ease-in-out infinite;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.4s ease;
+        }
+
+        .logo-container:hover .logo-icon {
+            transform: rotateY(15deg) scale(1.08);
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        /* Mini orbit ring */
+        .logo-orbit {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 1.5px solid transparent;
+            border-top-color: var(--primary);
+            border-right-color: rgba(99, 102, 241, 0.2);
+            animation: orbit 4s linear infinite;
+            pointer-events: none;
+        }
+
+        .logo-orbit-2 {
+            width: 80px;
+            height: 80px;
+            border-top-color: transparent;
+            border-bottom-color: var(--sky);
+            border-left-color: rgba(56, 189, 248, 0.2);
+            animation: orbitReverse 5s linear infinite;
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes orbitReverse {
+            from {
+                transform: rotate(120deg);
+            }
+
+            to {
+                transform: rotate(-240deg);
+            }
+        }
+
+        .logo-glow {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            animation: glow 3s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.8);
+                opacity: 0.15;
+            }
+        }
+
         .logo h1 {
-            color: var(--primary);
-            font-size: 2rem;
-            margin-bottom: 5px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeSlideUp 0.8s ease-out 0.3s both;
         }
-        
+
         .logo p {
-            color: #6b7280;
-            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 4px;
+            animation: fadeSlideUp 0.8s ease-out 0.5s both;
         }
-        
-        .form-group {
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Error ─── */
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 12px;
             margin-bottom: 20px;
+            display: none;
+            font-size: 0.88rem;
+            text-align: center;
+            animation: shake 0.4s;
         }
-        
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-6px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(6px);
+            }
+        }
+
+        /* ─── Success ─── */
+        .success-msg {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.88rem;
+            text-align: center;
+            animation: fadeSlideUp 0.4s ease-out;
+        }
+
+        /* ─── Form ─── */
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+            animation: fadeSlideUp 0.6s ease-out both;
+        }
+
+        .form-group:nth-child(1) {
+            animation-delay: 0.4s;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #374151;
+            color: var(--text-dim);
             font-weight: 500;
+            font-size: 0.88rem;
+            transition: color 0.3s;
         }
-        
-        .form-group input {
+
+        .form-group:focus-within label {
+            color: var(--accent);
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            font-size: 0.9rem;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .input-wrap:focus-within i {
+            color: var(--primary);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .input-wrap input {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .form-group input:focus {
+            padding: 13px 50px 13px 42px;
+            background: var(--glass);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
-        
+
+        .input-wrap input::placeholder {
+            color: #475569;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 0 25px rgba(99, 102, 241, 0.08);
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        /* ─── Password toggle ─── */
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #475569;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            padding: 8px;
+            z-index: 2;
+            line-height: 1;
+        }
+
+        .toggle-password:hover {
+            color: var(--accent);
+        }
+
+        /* ─── Checkbox ─── */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            animation: fadeSlideUp 0.6s ease-out 0.6s both;
+        }
+
+        .remember-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .remember-row label {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* ─── Button ─── */
         .btn-login {
             width: 100%;
             padding: 14px;
-            background: var(--primary);
-            color: white;
             border: none;
-            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
+            box-shadow: 0 4px 20px var(--primary-glow);
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: fadeSlideUp 0.6s ease-out 0.7s both;
         }
-        
+
         .btn-login:hover {
-            background: var(--primary-dark);
             transform: translateY(-2px);
+            box-shadow: 0 8px 35px var(--primary-glow);
         }
-        
+
         .btn-login:active {
             transform: translateY(0);
         }
-        
-        .error-message {
-            background: #fee2e2;
-            color: var(--danger);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-            font-size: 0.9rem;
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
         }
-        
+
+        /* Ripple on button */
+        .btn-login .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .btn-login .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── Security Info ─── */
         .security-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f0f9ff;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            color: #0369a1;
+            margin-top: 28px;
+            padding: 16px;
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.12);
+            border-radius: 12px;
+            animation: fadeSlideUp 0.6s ease-out 0.8s both;
         }
-        
-        .security-info i {
-            margin-right: 5px;
+
+        .security-info .title {
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
+
+        .security-info p {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .security-info p i {
+            width: 16px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--emerald);
+        }
+
+        /* ─── Footer ─── */
         .login-footer {
             text-align: center;
-            margin-top: 25px;
-            font-size: 0.8rem;
-            color: #6b7280;
+            margin-top: 24px;
+            font-size: 0.78rem;
+            color: #475569;
+            animation: fadeSlideUp 0.6s ease-out 0.9s both;
         }
-        
+
         .login-footer a {
             color: var(--primary);
             text-decoration: none;
+            transition: color 0.3s;
         }
-        
+
         .login-footer a:hover {
+            color: var(--accent);
             text-decoration: underline;
         }
-        
+
+        /* ─── 2FA ─── */
         .otp-section {
             display: none;
-            animation: fadeIn 0.3s;
+            animation: fadeSlideUp 0.4s ease-out;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .qr-code {
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .qr-code img {
-            max-width: 200px;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 10px;
-            background: white;
+
+        /* ─── Responsive ─── */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 36px 24px;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="login-container">
+    <canvas id="bgCanvas"></canvas>
+    <div class="glow-bg"></div>
+
+    <div class="login-card">
         <div class="logo">
-            <h1>🔐 Портал проектов</h1>
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <div class="logo-orbit"></div>
+                <div class="logo-orbit logo-orbit-2"></div>
+                <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+            </div>
+            <h1>Портал проектов</h1>
             <p>Требуется аутентификация</p>
         </div>
-        
-        <div id="errorMessage" class="error-message">
-            Неверное имя пользователя или пароль
+
+        <div id="errorMessage" class="error-msg">
+            <i class="fas fa-exclamation-circle"></i> Неверное имя пользователя или пароль
         </div>
-        
+
+        <div id="successMessage" class="success-msg">
+            <i class="fas fa-check-circle"></i> Авторизация успешна. Перенаправление...
+        </div>
+
         <form id="loginForm">
             <div class="form-group">
                 <label for="username">Имя пользователя</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    placeholder="Введите имя пользователя"
-                    required
-                    autocomplete="username"
-                >
+                <div class="input-wrap">
+                    <input type="text" id="username" name="username" placeholder="Введите имя пользователя" required
+                        autocomplete="username">
+                    <i class="fas fa-user"></i>
+                </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="password">Пароль</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Введите пароль"
-                    required
-                    autocomplete="current-password"
-                >
+                <div class="input-wrap">
+                    <input type="password" id="password" name="password" placeholder="Введите пароль" required
+                        autocomplete="current-password">
+                    <i class="fas fa-lock"></i>
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="remember" name="remember">
-                    Запомнить меня (30 дней)
-                </label>
+
+            <div class="remember-row">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Запомнить меня (30 дней)</label>
             </div>
-            
-            <button type="submit" class="btn-login">
+
+            <button type="submit" class="btn-login" id="loginBtn">
                 <span id="btnText">Войти в систему</span>
-                <span id="btnSpinner" style="display: none;">⌛ Вход...</span>
+                <span id="btnSpinner" style="display:none"><span class="spinner"></span>Вход...</span>
             </button>
         </form>
-        
-        <!-- 2FA секция (опционально) -->
+
+        <!-- 2FA section placeholder -->
         <div id="otpSection" class="otp-section">
             <div class="form-group">
                 <label for="otp">Код двухфакторной аутентификации</label>
-                <input 
-                    type="text" 
-                    id="otp" 
-                    name="otp" 
-                    placeholder="000000"
-                    maxlength="6"
-                    pattern="\d{6}"
-                >
+                <div class="input-wrap">
+                    <input type="text" id="otp" name="otp" placeholder="000000" maxlength="6" pattern="\d{6}">
+                    <i class="fas fa-key"></i>
+                </div>
             </div>
-            
-            <div class="qr-code">
-                <p>Или отсканируйте QR-код:</p>
-                <div id="qrcode"></div>
-            </div>
-            
-            <button onclick="verify2FA()" class="btn-login">
-                Подтвердить
-            </button>
+            <button onclick="verify2FA()" class="btn-login">Подтвердить</button>
         </div>
-        
+
         <div class="security-info">
-            <strong>🛡️ Информация о безопасности:</strong>
-            <p>• Используется HTTPS шифрование</p>
-            <p>• Пароли хранятся в хешированном виде</p>
-            <p>• Неактивные сессии завершаются через 30 минут</p>
+            <div class="title"><i class="fas fa-shield-halved"></i> Безопасность</div>
+            <p><i class="fas fa-check"></i> HTTPS шифрование соединения</p>
+            <p><i class="fas fa-check"></i> Хеширование паролей bcrypt</p>
+            <p><i class="fas fa-check"></i> Автозавершение сессии через 30 минут</p>
         </div>
-        
+
         <div class="login-footer">
-            <p>© 2024 Портал проектов. Для авторизованного доступа.</p>
-            <p>Проблемы со входом? <a href="mailto:admin@localhost">Свяжитесь с администратором</a></p>
+            <p>&copy; 2026 Портал проектов. <a href="/">На главную</a></p>
         </div>
     </div>
 
     <script>
-        // Простая аутентификация (в реальном проекте заменить на JWT)
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        // ─── Particle Canvas ───
+        (function () {
+            const c = document.getElementById('bgCanvas');
+            const ctx = c.getContext('2d');
+            let w, h, pts = [];
+
+            function resize() { w = c.width = innerWidth; h = c.height = innerHeight; }
+            addEventListener('resize', resize); resize();
+
+            const count = Math.min(70, Math.floor(w * h / 14000));
+            for (let i = 0; i < count; i++) {
+                pts.push({
+                    x: Math.random() * w, y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+                    r: Math.random() * 1.3 + 0.3, a: Math.random() * 0.35 + 0.08
+                });
+            }
+
+            (function loop() {
+                ctx.clearRect(0, 0, w, h);
+                pts.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0 || p.x > w) p.vx *= -1;
+                    if (p.y < 0 || p.y > h) p.vy *= -1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(99,102,241,${p.a})`; ctx.fill();
+                });
+                for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+                    const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+                    const d = Math.sqrt(dx * dx + dy * dy);
+                    if (d < 130) {
+                        ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+                        ctx.strokeStyle = `rgba(99,102,241,${0.06 * (1 - d / 130)})`; ctx.stroke();
+                    }
+                }
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+        // ─── Toggle Password ───
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                pwd.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // ─── Button Ripple ───
+        document.getElementById('loginBtn').addEventListener('click', function (e) {
+            const rect = this.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple-effect';
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+
+        // ─── Login Logic ───
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const remember = document.getElementById('remember').checked;
-            
-            // Показать спиннер
+            const btn = document.getElementById('loginBtn');
+
+            // Hide previous messages
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+
             document.getElementById('btnText').style.display = 'none';
             document.getElementById('btnSpinner').style.display = 'inline';
-            
-            // Имитация запроса к серверу
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Проверка учетных данных (в реальности - запрос к API)
+            btn.disabled = true;
+
+            await new Promise(r => setTimeout(r, 800));
+
+            // Passwords matching .env values
             const validUsers = {
-                'admin': 'ChangeMe123!',
-                'user': 'password123',
-                'demo': 'demo'
+                'admin': 'admin135'
             };
-            
+
             if (validUsers[username] && validUsers[username] === password) {
-                // Успешный вход
+                // Show success
+                const successEl = document.getElementById('successMessage');
+                successEl.style.display = 'block';
+
                 localStorage.setItem('portal_auth', 'true');
-                localStorage.setItem('portal_user', 'fake-jwt-token');
-                
+                localStorage.setItem('portal_user', username);
+
                 if (remember) {
                     const expiry = new Date();
                     expiry.setDate(expiry.getDate() + 30);
                     localStorage.setItem('portal_expiry', expiry.toISOString());
                 }
-                
-                // Генерируем фейковый токен
-                const fakeToken = btoa(JSON.stringify({
+
+                const token = btoa(JSON.stringify({
                     user: username,
                     role: username === 'admin' ? 'admin' : 'user',
                     exp: Date.now() + 3600000
                 }));
-                localStorage.setItem('portal_token', fakeToken);
-                
-                // --- ЛОГИКА ПЕРЕНАПРАВЛЕНИЯ (ИЗМЕНЕНО) ---
-                // Проверяем, есть ли параметр target в URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const target = urlParams.get('target');
+                localStorage.setItem('portal_token', token);
 
-                if (target === 'admin') {
-                    // Если цель - админка, идем туда
-                    window.location.href = '/admin.html';
-                } else {
-                    // Иначе на главную
-                    window.location.href = '/';
-                }
-                // ------------------------------------------
-
+                // Redirect with small delay to show success
+                await new Promise(r => setTimeout(r, 600));
+                const target = new URLSearchParams(window.location.search).get('target');
+                window.location.href = target === 'admin' ? '/admin.html' : '/';
             } else {
-            
-                // Ошибка входа
-                document.getElementById('errorMessage').style.display = 'block';
+                const errEl = document.getElementById('errorMessage');
+                errEl.style.display = 'block';
+                errEl.style.animation = 'none';
+                errEl.offsetHeight; // trigger reflow
+                errEl.style.animation = 'shake 0.4s';
+
                 document.getElementById('btnText').style.display = 'inline';
                 document.getElementById('btnSpinner').style.display = 'none';
-                
-                // Анимация ошибки
-                document.getElementById('loginForm').style.animation = 'shake 0.5s';
-                setTimeout(() => {
-                    document.getElementById('loginForm').style.animation = '';
-                }, 500);
+                btn.disabled = false;
             }
         });
-        
-        // Проверка существующей сессии
-        window.addEventListener('load', function() {
+
+        // ─── Check existing session ───
+        window.addEventListener('load', function () {
             const auth = localStorage.getItem('portal_auth');
             const expiry = localStorage.getItem('portal_expiry');
-            
-            if (auth === 'true' && expiry) {
-                const expiryDate = new Date(expiry);
-                if (expiryDate > new Date()) {
-                    window.location.href = '/';
-                } else {
-                    localStorage.removeItem('portal_auth');
-                    localStorage.removeItem('portal_expiry');
-                    localStorage.removeItem('portal_token');
-                }
+            if (auth === 'true' && expiry && new Date(expiry) > new Date()) {
+                window.location.href = '/';
+            } else {
+                localStorage.removeItem('portal_auth');
+                localStorage.removeItem('portal_expiry');
+                localStorage.removeItem('portal_token');
             }
         });
-        
-        // Стиль для анимации ошибки
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                20%, 40%, 60%, 80% { transform: translateX(5px); }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
+
 </html>

@@ -26,9 +26,16 @@ const db = new sqlite3.Database(dbPath);
 const SQLITE_SHARE_DIR = path.resolve(__dirname, '../sqlite_data');
 function syncSqliteForGrafana() {
   try {
-    if (!fs.existsSync(SQLITE_SHARE_DIR)) fs.mkdirSync(SQLITE_SHARE_DIR, { recursive: true });
-    fs.copyFileSync(dbPath, path.join(SQLITE_SHARE_DIR, 'data.sqlite'));
-  } catch (e) { /* shared volume may not be mounted in dev */ }
+    if (!fs.existsSync(SQLITE_SHARE_DIR)) {
+      fs.mkdirSync(SQLITE_SHARE_DIR, { recursive: true });
+      console.log(`[SYNC] Created directory: ${SQLITE_SHARE_DIR}`);
+    }
+    const dest = path.join(SQLITE_SHARE_DIR, 'data.sqlite');
+    fs.copyFileSync(dbPath, dest);
+    // console.log(`[SYNC] data.sqlite synced to ${dest} at ${new Date().toISOString()}`);
+  } catch (e) {
+    console.error(`[SYNC ERROR] Failed to sync SQLite: ${e.message}`);
+  }
 }
 syncSqliteForGrafana();
 setInterval(syncSqliteForGrafana, 60000); // sync every 60s
@@ -399,17 +406,28 @@ app.get('/api/download-template', (req, res) => {
   res.send(buf);
 });
 
-app.get('/', (req, res) => res.json({ message: '🚀 API Yakutia Map Online' }));
 
-// ─── Production: раздаём собранный React ────────────────────────────────
-if (process.env.NODE_ENV === 'production') {
+
+// ─── Раздаём собранный React (из dist) ────────────────────────────────
+const distPath = path.join(__dirname, '..', 'dist');
+if (fs.existsSync(distPath)) {
   // Отдаём статику из dist
-  app.use(express.static(path.join(__dirname, 'dist')));
+  app.use(express.static(distPath));
+
+  // Явно отдаём admin.html (не через React Router)
+  app.get('/admin.html', (req, res) => {
+    const adminPath = path.join(distPath, 'admin.html');
+    if (fs.existsSync(adminPath)) res.sendFile(adminPath);
+    else res.status(404).send('Admin page not found');
+  });
 
   // Все остальные пути → index.html (для React Router)
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  app.get('/{*path}', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
   });
+} else {
+  // Если dist не собран (чистая dev-среда) — отдаём JSON-заглушку
+  app.get('/', (req, res) => res.json({ message: '🚀 API Yakutia Map Online — используйте Vite dev server для UI' }));
 }
 
 app.listen(PORT, () => console.log(`✅ Server: http://localhost:${PORT}`));

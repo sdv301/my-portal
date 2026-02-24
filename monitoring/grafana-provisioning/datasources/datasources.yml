@@ -3,12 +3,13 @@ apiVersion: 1
 datasources:
   - name: PostgreSQL
     type: postgres
+    uid: portal-postgres
     access: proxy
     url: postgres:5432
     database: portal_db
-    user: ${DB_USER}
+    user: portal_user
     secureJsonData:
-      password: ${DB_PASSWORD}
+      password: admin135
     jsonData:
       sslmode: disable
       maxOpenConns: 5
@@ -27,3 +28,14 @@ datasources:
       path: /var/lib/grafana/sqlite/data.sqlite
     isDefault: false
     editable: true
+
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: false
+    editable: true
+    jsonData:
+      httpMethod: POST
+      timeInterval: 15s

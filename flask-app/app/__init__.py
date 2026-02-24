@@ -18,38 +18,49 @@ def create_app():
     return app
 
 def init_database(app):
-    """Инициализация базы данных"""
-    with app.app_context():
-        try:
-            db_connection.create_tables()
-            print("Таблицы базы данных созданы успешно")
-            
-            # Добавляем тестовые компании если их нет
-            from database.queries import db
-            session = db_connection.get_session()
-            from database.models import Company
-            
-            existing = session.query(Company).count()
-            if existing == 0:
-                test_companies = [
-                    ("Саханефтегазсбыт", "СНГС"),
-                    ("Туймаада-Нефть", "ТУЙМААДА"),
-                    ("Сибойл", "СИБОЙЛ"),
-                    ("ЭКТО-Ойл", "ЭКТО"),
-                    ("Сибирское топливо", "СИБТОП"),
-                    ("Паритет", "ПАРИТЕТ")
-                ]
+    """Инициализация базы данных с ожиданием готовности PostgreSQL"""
+    import time
+    max_retries = 10
+    retry_delay = 3  # секунд
+
+    for attempt in range(1, max_retries + 1):
+        with app.app_context():
+            try:
+                db_connection.create_tables()
+                print("Таблицы базы данных созданы успешно")
                 
-                for name, code in test_companies:
-                    company = Company(name=name, code=code)
-                    session.add(company)
+                # Добавляем тестовые компании если их нет
+                from database.queries import db
+                session = db_connection.get_session()
+                from database.models import Company
                 
-                session.commit()
-                print("Тестовые компании добавлены")
-        except Exception as e:
-            print(f"Ошибка при инициализации БД: {e}")
-        finally:
-            db_connection.close_session()
+                existing = session.query(Company).count()
+                if existing == 0:
+                    test_companies = [
+                        ("Саханефтегазсбыт", "СНГС"),
+                        ("Туймаада-Нефть", "ТУЙМААДА"),
+                        ("Сибойл", "СИБОЙЛ"),
+                        ("ЭКТО-Ойл", "ЭКТО"),
+                        ("Сибирское топливо", "СИБТОП"),
+                        ("Паритет", "ПАРИТЕТ")
+                    ]
+                    
+                    for name, code in test_companies:
+                        company = Company(name=name, code=code)
+                        session.add(company)
+                    
+                    session.commit()
+                    print("Тестовые компании добавлены")
+                return  # Успех — выходим из функции
+            except Exception as e:
+                print(f"[Попытка {attempt}/{max_retries}] Ошибка при инициализации БД: {e}")
+                if attempt < max_retries:
+                    print(f"Повторная попытка через {retry_delay} сек...")
+                    time.sleep(retry_delay)
+                else:
+                    print("КРИТИЧЕСКАЯ ОШИБКА: не удалось подключиться к БД после всех попыток!")
+            finally:
+                db_connection.close_session()
 
 def register_blueprints(app):
     """Регистрация маршрутов"""

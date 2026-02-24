@@ -1,407 +1,996 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Портал проектов</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <title>Портал проектов — Единая точка входа</title>
+    <meta name="description"
+        content="Портал проектов — единая точка входа для Flask API, React Frontend и инструментов аналитики">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary: #4f46e5;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+            --accent: #818cf8;
+            --emerald: #10b981;
+            --sky: #38bdf8;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
             --text: #f1f5f9;
-            --bg: #0f0f0f;
-            --card-bg: rgba(30, 30, 50, 0.6);
-            --accent: #6366f1;
-            --glow: rgba(79, 70, 229, 0.6);
+            --text-dim: #94a3b8;
+            --bg: #030712;
+            --surface: rgba(15, 23, 42, 0.65);
+            --border: rgba(99, 102, 241, 0.15);
+            --glass: rgba(255, 255, 255, 0.04);
         }
 
         html {
             scroll-behavior: smooth;
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
             overflow-x: hidden;
             line-height: 1.6;
-            animation: fadeIn 1.5s ease-in-out; /* Плавное появление всей страницы */
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
+        /* ─── Canvas Background ─── */
+        #particlesCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
-        
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
-        
-        /* Hero Section с анимированным фоном */
+
+        /* ─── Navbar ─── */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            background: rgba(3, 7, 18, 0.6);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.4s;
+        }
+
+        .navbar.scrolled {
+            padding: 12px 40px;
+            background: rgba(3, 7, 18, 0.9);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-brand {
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--primary), var(--sky));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .nav-brand:hover {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.25s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+            background: var(--glass);
+        }
+
+        .nav-links .btn-admin {
+            background: var(--primary);
+            color: #fff;
+            border-radius: 10px;
+            padding: 8px 20px;
+            font-weight: 600;
+            box-shadow: 0 0 20px var(--primary-glow);
+            transition: all 0.3s;
+        }
+
+        .nav-links .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--primary-glow), 0 8px 25px rgba(99, 102, 241, 0.25);
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── Hero ─── */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
             position: relative;
-            overflow: hidden;
-            padding: 100px 0;
+            padding: 120px 0 80px;
         }
-        
+
         .hero::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at center, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
-            pointer-events: none;
-            animation: pulseGlow 4s infinite alternate; /* Пульсирующее свечение */
-        }
-
-        /* Анимированные фоновые частицы (точки) */
-        .hero::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
-            animation: moveDots 20s linear infinite;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        @keyframes moveDots {
-            0% { background-position: 0 0; }
-            100% { background-position: 100px 100px; }
-        }
-
-        @keyframes pulseGlow {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.7; }
-        }
-        
-        /* Логотип */
-        .logo-container { margin-bottom: 30px; perspective: 1000px; }
-        .hero-logo {
-            width: 180px; height: 180px; object-fit: contain;
-            filter: drop-shadow(0 0 20px rgba(79, 70, 229, 0.4));
-            animation: float 6s ease-in-out infinite, rotateGlow 8s infinite alternate;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(3deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        @keyframes rotateGlow {
-            0% { filter: drop-shadow(0 0 20px rgba(79, 70, 229, 0.4)); }
-            100% { filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.9)); }
-        }
-
-        .hero-content {
-            animation: slideUp 1.2s ease-out; /* Появление контента снизу */
-            position: relative;
-            z-index: 2;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-        }
-
-        .hero-content h1 {
-            font-size: 5rem; font-weight: 800; margin-bottom: 10px;
-            background: linear-gradient(90deg, #fff, var(--primary), #fff);
-            background-size: 200% auto;
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-            line-height: 1.1;
-            animation: gradientMove 6s linear infinite; /* Переливающийся градиент */
-        }
-
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .hero-subtitle {
-            font-size: 1.2rem; color: var(--accent); text-transform: uppercase;
-            letter-spacing: 3px; margin-bottom: 20px; font-weight: 700;
-            animation: fadeInLetter 1.8s;
-        }
-
-        .hero-content p {
-            font-size: 1.3rem; max-width: 700px; margin: 0 auto 40px;
-            opacity: 0.8; color: #cbd5e1;
-            animation: fadeIn 2s;
-        }
-        
-        .btn {
-            padding: 14px 32px; background: var(--primary); color: white;
-            border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 600;
-            cursor: pointer; transition: all 0.3s; text-decoration: none;
-            display: inline-block; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        /* Эффект бегущей подсветки на кнопке */
-        .btn::before {
-            content: '';
-            position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.6s;
-            z-index: -1;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.5); background: #4338ca;
-        }
-
-        /* Navigation с анимацией */
-        nav { 
-            position: fixed; 
-            top: 30px; 
-            right: 40px; 
-            z-index: 100;
-            animation: slideInRight 0.8s ease-out;
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(50px); opacity: 0; }
-            to   { transform: translateX(0); opacity: 1; }
-        }
-
-        nav a {
-            color: white; text-decoration: none; font-weight: 500;
-            padding: 10px 25px; background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 50px; transition: all 0.3s; display: flex;
-            align-items: center; gap: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        nav a::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(79, 70, 229, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-            z-index: -1;
-        }
-
-        nav a:hover::before {
-            width: 200%;
-            height: 200%;
-        }
-
-        nav a:hover { 
-            background: rgba(255,255,255,0.15); 
-            border-color: var(--primary);
-            box-shadow: 0 0 20px var(--glow);
-        }
-        
-        /* Projects Section */
-        .projects { padding: 100px 0; background: var(--bg); }
-        .section-title {
-            text-align: center; font-size: 3rem; margin-bottom: 80px;
-            font-weight: 700; color: white;
-            position: relative;
-            display: inline-block;
-            /* left: center; */
-            transform: translateX(-50%);
-        }
-
-        /* Анимированная линия под заголовком */
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
             left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            animation: lineWidth 3s infinite alternate;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+            animation: heroGlow 6s ease-in-out infinite alternate;
         }
 
-        @keyframes lineWidth {
-            0% { width: 50%; left: 25%; }
-            100% { width: 80%; left: 10%; }
+        @keyframes heroGlow {
+            0% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
-        .projects-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 40px;
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
         }
-        
-        .project-card {
-            background: var(--card-bg); border-radius: 24px; overflow: hidden;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Enhanced Logo Container ─── */
+        .logo-container {
             position: relative;
-        }
-
-        /* Пульсирующая рамка при наведении */
-        .project-card:hover {
-            transform: translateY(-15px); 
-            border-color: var(--primary);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(79, 70, 229, 0.2);
-            animation: borderPulse 1.5s infinite;
-        }
-
-        @keyframes borderPulse {
-            0% { box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(79, 70, 229, 0.2); }
-            50% { box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 4px rgba(79, 70, 229, 0.5); }
-            100% { box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(79, 70, 229, 0.2); }
-        }
-        
-        .project-img-wrapper {
-            height: 250px;
-            position: relative;
-            overflow: hidden;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+            animation: slideDown 1s ease-out;
+            perspective: 800px;
         }
 
-        .project-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s ease, filter 0.6s ease;
-            filter: grayscale(20%) brightness(0.9);
+        .logo-container:hover .hero-logo {
+            transform: rotateY(15deg) rotateX(-5deg) scale(1.08);
+            filter: drop-shadow(0 0 60px var(--primary-glow)) drop-shadow(0 0 120px rgba(99, 102, 241, 0.2));
         }
 
-        .project-card:hover .project-img {
-            transform: scale(1.1);
-            filter: grayscale(0%) brightness(1.1);
+        .hero-logo {
+            width: 240px;
+            height: 240px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 40px var(--primary-glow));
+            animation: logoFloat 6s ease-in-out infinite;
+            position: relative;
+            z-index: 3;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.5s ease;
         }
 
-        .project-overlay {
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-14px) scale(1.03);
+            }
+        }
+
+        /* Orbiting Rings */
+        .orbit-ring {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, transparent 50%, rgba(15,15,15,0.9));
+            border-radius: 50%;
+            border: 1.5px solid transparent;
+            pointer-events: none;
+        }
+
+        .orbit-ring-1 {
+            width: 300px;
+            height: 300px;
+            border-top-color: var(--primary);
+            border-right-color: rgba(99, 102, 241, 0.3);
+            animation: orbit1 5s linear infinite;
+            filter: drop-shadow(0 0 6px var(--primary-glow));
+        }
+
+        .orbit-ring-2 {
+            width: 350px;
+            height: 350px;
+            border-bottom-color: var(--sky);
+            border-left-color: rgba(56, 189, 248, 0.2);
+            animation: orbit2 8s linear infinite;
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.3));
+        }
+
+        .orbit-ring-3 {
+            width: 400px;
+            height: 400px;
+            border-top-color: var(--emerald);
+            border-left-color: rgba(16, 185, 129, 0.2);
+            animation: orbit3 7s linear infinite;
+            filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.3));
+        }
+
+        @keyframes orbit1 {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes orbit2 {
+            from {
+                transform: rotate(120deg);
+            }
+
+            to {
+                transform: rotate(-240deg);
+            }
+        }
+
+        @keyframes orbit3 {
+            from {
+                transform: rotate(240deg);
+            }
+
+            to {
+                transform: rotate(600deg);
+            }
+        }
+
+        /* Orbiting Particles (dots on rings) */
+        .orbit-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .orbit-dot-1 {
+            background: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow), 0 0 24px var(--primary-glow);
+            animation: orbitDot1 5s linear infinite;
+        }
+
+        .orbit-dot-2 {
+            background: var(--sky);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.6), 0 0 24px rgba(56, 189, 248, 0.3);
+            animation: orbitDot2 8s linear infinite;
+            width: 7px;
+            height: 7px;
+        }
+
+        .orbit-dot-3 {
+            background: var(--emerald);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), 0 0 24px rgba(16, 185, 129, 0.3);
+            animation: orbitDot3 7s linear infinite;
+            width: 6px;
+            height: 6px;
+        }
+
+        @keyframes orbitDot1 {
+            from {
+                transform: rotate(0deg) translateX(150px) rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg) translateX(150px) rotate(-360deg);
+            }
+        }
+
+        @keyframes orbitDot2 {
+            from {
+                transform: rotate(120deg) translateX(175px) rotate(-120deg);
+            }
+
+            to {
+                transform: rotate(-240deg) translateX(175px) rotate(240deg);
+            }
+        }
+
+        @keyframes orbitDot3 {
+            from {
+                transform: rotate(240deg) translateX(200px) rotate(-240deg);
+            }
+
+            to {
+                transform: rotate(600deg) translateX(200px) rotate(-600deg);
+            }
+        }
+
+        /* Pulsating Glow Behind Logo */
+        .logo-glow {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            animation: glowPulse 3s ease-in-out infinite;
             z-index: 1;
-        }
-        
-        .project-content { padding: 40px; position: relative; z-index: 2; }
-        .project-content h3 { 
-            font-size: 1.8rem; margin-bottom: 15px; color: white;
-            transition: transform 0.3s, color 0.3s;
+            pointer-events: none;
         }
 
-        .project-card:hover .project-content h3 {
-            color: var(--primary);
-            transform: translateX(5px);
+        @keyframes glowPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.6);
+                opacity: 0.15;
+            }
         }
 
-        .project-content p { color: #94a3b8; margin-bottom: 25px; min-height: 50px; }
-        
-        footer { 
-            padding: 60px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); 
-            color: #64748b;
+        /* Logo entrance */
+        .logo-container.animate-in .hero-logo {
+            animation: logoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, logoFloat 6s ease-in-out 1.2s infinite;
+        }
+
+        @keyframes logoEntrance {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-30deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* ─── Nav Link Animated Underline ─── */
+        .nav-links a:not(.btn-admin) {
             position: relative;
             overflow: hidden;
         }
 
-        footer p {
-            animation: footerFade 2s;
+        .nav-links a:not(.btn-admin)::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--sky));
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .nav-links a:not(.btn-admin):hover::after {
+            width: 60%;
+        }
+
+        /* ─── Staggered Reveal ─── */
+        .reveal-stagger {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal-stagger.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ─── Section Divider Glow ─── */
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--sky), transparent);
+            opacity: 0.3;
+            margin: 0;
+        }
+
+        /* ─── Smooth Active Nav ─── */
+        .nav-links a.active-link {
+            color: var(--text) !important;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .nav-links a.active-link::after {
+            width: 60% !important;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--sky) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            animation: slideUp 0.8s ease-out 0.4s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
             position: relative;
-            z-index: 2;
+            overflow: hidden;
         }
 
-        @keyframes footerFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: #fff;
+            box-shadow: 0 0 30px var(--primary-glow), 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
-        /* Анимированный фон в футере */
-        footer::before {
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 50px var(--primary-glow), 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--glass);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        /* Ripple Effect */
+        .btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ─── Section Styles ─── */
+        .section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        /* ─── Project Cards ─── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .card::before {
             content: '';
             position: absolute;
             top: 0;
-            left: -50%;
-            width: 200%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(79,70,229,0.1), transparent);
-            animation: shine 8s infinite;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--sky));
+            opacity: 0;
+            transition: opacity 0.4s;
         }
 
-        @keyframes shine {
-            0% { left: -50%; }
-            100% { left: 50%; }
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99, 102, 241, 0.35);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.15), 0 0 40px rgba(99, 102, 241, 0.08);
         }
-        
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-img-wrap {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+            filter: brightness(0.8);
+        }
+
+        .card:hover .card-img-wrap img {
+            transform: scale(1.08);
+            filter: brightness(1);
+        }
+
+        .card-img-wrap .card-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .card-body h3 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body h3 .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .card-body p {
+            color: var(--text-dim);
+            font-size: 0.92rem;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .card-body .tech-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .card-body .tech-tags span {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-btn.blue {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .card-btn.green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        /* ─── Status Section ─── */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .status-item {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .status-item:hover {
+            border-color: rgba(99, 102, 241, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: #334155;
+            transition: all 0.3s;
+        }
+
+        .status-dot.online {
+            background: var(--emerald);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: var(--rose);
+            box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-info .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .status-info .detail {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .status-item .port-tag {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        /* ─── Monitor Links ─── */
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .monitor-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.4s;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .monitor-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .monitor-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .monitor-card h4 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 1.05rem;
+        }
+
+        .monitor-card p {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* ─── Footer ─── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        footer p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        /* ─── Responsive ─── */
         @media (max-width: 768px) {
-            .hero-content h1 { font-size: 3.5rem; }
-            .projects-grid { grid-template-columns: 1fr; }
-            nav { top: 20px; right: 20px; }
+            .navbar {
+                padding: 14px 20px;
+            }
+
+            .nav-links a:not(.btn-admin) {
+                display: none;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* ─── Scroll Reveal ─── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
+
 <body>
-    <nav>
-        <a href="#" onclick="openAdmin()"><i class="fas fa-user-shield"></i> Админ-панель</a>
+    <canvas id="particlesCanvas"></canvas>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-brand"><i class="fas fa-cube"></i> Портал Проектов</a>
+        <div class="nav-links">
+            <a href="#modules">Модули</a>
+            <a href="#status">Статус</a>
+            <a href="#monitoring">Мониторинг</a>
+            <a href="#" onclick="openAdmin()" class="btn-admin"><i class="fas fa-shield-halved"></i> Админ</a>
+        </div>
     </nav>
 
+    <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
-                <div class="logo-container">
-                    <img src="1.png" alt="Portal Logo" class="hero-logo">
-                </div>
-                <div class="hero-subtitle">Система мониторинга и управления</div>
-                <h1>ПОРТАЛ ПРОЕКТОВ</h1>
-                <p>Единая точка входа для Flask API, React Frontend и инструментов аналитики.</p>
-                <a href="#modules" class="btn">Начать работу</a>
+            <div class="logo-container" id="logoContainer">
+                <div class="logo-glow"></div>
+                <div class="orbit-ring orbit-ring-1"></div>
+                <div class="orbit-ring orbit-ring-2"></div>
+                <div class="orbit-ring orbit-ring-3"></div>
+                <div class="orbit-dot orbit-dot-1"></div>
+                <div class="orbit-dot orbit-dot-2"></div>
+                <div class="orbit-dot orbit-dot-3"></div>
+                <img src="1.png" alt="Logo" class="hero-logo">
+            </div>
+            <h1>ПОРТАЛ ПРОЕКТОВ</h1>
+            <p>Единая точка входа для Flask API, React Frontend и инструментов аналитики Республики Саха (Якутия)</p>
+            <div class="hero-actions">
+                <a href="#modules" class="btn btn-primary"><i class="fas fa-rocket"></i> Начать работу</a>
+                <a href="#status" class="btn btn-outline"><i class="fas fa-signal"></i> Статус сервисов</a>
             </div>
         </div>
     </section>
 
-    <section class="projects" id="modules">
+    <div class="section-divider"></div>
+
+    <!-- Modules -->
+    <section class="section" id="modules">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-up">Активные модули</h2>
-            <div class="projects-grid">
-                
-                <div class="project-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="project-img-wrapper">
-                        <img src="3.png" alt="React App" class="project-img">
-                        <div class="project-overlay"></div>
+            <div class="section-header reveal">
+                <h2>Активные модули</h2>
+                <p>Основные приложения портала</p>
+            </div>
+            <div class="cards-grid">
+
+                <div class="card reveal">
+                    <div class="card-img-wrap">
+                        <img src="3.png" alt="React App">
+                        <span class="card-badge"><i class="fas fa-circle" style="font-size:6px;margin-right:4px"></i>
+                            Активен</span>
                     </div>
-                    <div class="project-content">
-                        <h3>Мат.резерв</h3>
-                        <p>Frontend приложение на базе Vite. Мгновенная загрузка, современный UI и полная интеграция с API.</p>
-                        <a href="#" onclick="window.open('http://'+location.hostname+':3002','_blank')" class="btn" style="background: #3b82f6;">Открыть</a>
+                    <div class="card-body">
+                        <h3><span class="icon" style="background:rgba(59,130,246,0.15);color:#3b82f6"><i
+                                    class="fab fa-react"></i></span>Мат.резерв</h3>
+                        <div class="tech-tags">
+                            <span>React</span><span>Vite</span><span>SQLite</span><span>Express</span>
+                        </div>
+                        <p>Frontend приложение: интерактивная карта районов, управление материальными резервами,
+                            аналитика.</p>
+                        <a href="#" onclick="window.open('http://'+location.hostname+':3002','_blank');return false"
+                            class="card-btn blue">
+                            <i class="fas fa-external-link-alt"></i> Открыть
+                        </a>
                     </div>
                 </div>
-                
-                <div class="project-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="project-img-wrapper">
-                        <img src="2.png" alt="Flask API" class="project-img">
-                        <div class="project-overlay"></div>
+
+                <div class="card reveal">
+                    <div class="card-img-wrap">
+                        <img src="2.png" alt="Flask API">
+                        <span class="card-badge"><i class="fas fa-circle" style="font-size:6px;margin-right:4px"></i>
+                            Активен</span>
                     </div>
-                    <div class="project-content">
-                        <h3>Топливообеспечение</h3>
-                        <p>Надежный Backend сервер. RESTful архитектура, работа с базой данных PostgreSQL и JWT авторизация.</p>
-                        <a href="#" onclick="window.open('http://'+location.hostname+':5000','_blank')" class="btn" style="background: #10b981;">Открыть</a>
+                    <div class="card-body">
+                        <h3><span class="icon" style="background:rgba(16,185,129,0.15);color:#10b981"><i
+                                    class="fab fa-python"></i></span>Топливообеспечение</h3>
+                        <div class="tech-tags">
+                            <span>Flask</span><span>PostgreSQL</span><span>Gunicorn</span><span>Pandas</span>
+                        </div>
+                        <p>Backend сервер: загрузка Excel-отчётов, парсинг данных, генерация сводных отчётов по топливу.
+                        </p>
+                        <a href="#" onclick="window.open('http://'+location.hostname+':5000','_blank');return false"
+                            class="card-btn green">
+                            <i class="fas fa-external-link-alt"></i> Открыть
+                        </a>
                     </div>
                 </div>
 
@@ -409,15 +998,303 @@
         </div>
     </section>
 
+    <div class="section-divider"></div>
+
+    <!-- Status -->
+    <section class="section" id="status">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Статус сервисов</h2>
+                <p>Мониторинг доступности всех компонентов в реальном времени</p>
+            </div>
+            <div class="status-grid" id="statusGrid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Monitoring -->
+    <section class="section" id="monitoring">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Инструменты мониторинга</h2>
+                <p>DevOps утилиты для контроля и отладки</p>
+            </div>
+            <div class="monitor-grid">
+                <a href="#" onclick="window.open('http://'+location.hostname+':3001','_blank');return false"
+                    class="monitor-card reveal">
+                    <div class="monitor-icon" style="background:rgba(249,115,22,0.12);color:#f97316"><i
+                            class="fas fa-chart-area"></i></div>
+                    <div>
+                        <h4>Grafana</h4>
+                        <p>Дашборды визуализации данных PostgreSQL и SQLite</p>
+                    </div>
+                </a>
+                <a href="#" onclick="window.open('http://'+location.hostname+':9090','_blank');return false"
+                    class="monitor-card reveal">
+                    <div class="monitor-icon" style="background:rgba(239,68,68,0.12);color:#ef4444"><i
+                            class="fas fa-fire"></i></div>
+                    <div>
+                        <h4>Prometheus</h4>
+                        <p>Сбор метрик и алертинг для всех сервисов</p>
+                    </div>
+                </a>
+                <a href="#" onclick="window.open('http://'+location.hostname+':9000','_blank');return false"
+                    class="monitor-card reveal">
+                    <div class="monitor-icon" style="background:rgba(56,189,248,0.12);color:#38bdf8"><i
+                            class="fab fa-docker"></i></div>
+                    <div>
+                        <h4>Portainer</h4>
+                        <p>Управление Docker контейнерами через веб-интерфейс</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Footer -->
     <footer>
         <div class="container">
-            <p>&copy; 2026 Разработано в Министерстве по делам гражданской обороны и обеспечению безопасности жизнедеятельности населения РС(Я)</p>
+            <p>&copy; 2026 Разработано в Министерстве по делам гражданской обороны и обеспечению безопасности
+                жизнедеятельности населения РС(Я)</p>
         </div>
     </footer>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({ once: true, duration: 800 });
+        // ─── Particle Canvas ───
+        (function () {
+            const c = document.getElementById('particlesCanvas');
+            const ctx = c.getContext('2d');
+            let w, h, particles = [];
+
+            function resize() {
+                w = c.width = window.innerWidth;
+                h = c.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.vx = (Math.random() - 0.5) * 0.4;
+                    this.vy = (Math.random() - 0.5) * 0.4;
+                    this.r = Math.random() * 1.5 + 0.5;
+                    this.alpha = Math.random() * 0.4 + 0.1;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > w) this.vx *= -1;
+                    if (this.y < 0 || this.y > h) this.vy *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(99,102,241,${this.alpha})`;
+                    ctx.fill();
+                }
+            }
+
+            const count = Math.min(80, Math.floor(w * h / 12000));
+            for (let i = 0; i < count; i++) particles.push(new Particle());
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                particles.forEach(p => { p.update(); p.draw(); });
+
+                // Lines between close particles
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 150) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(99,102,241,${0.06 * (1 - dist / 150)})`;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        // ─── Navbar Scroll ───
+        window.addEventListener('scroll', () => {
+            document.querySelector('.navbar').classList.toggle('scrolled', window.scrollY > 60);
+        });
+
+        // ─── Scroll Reveal with Stagger ───
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.12 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Stagger children inside grids
+        const staggerObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const children = entry.target.querySelectorAll('.reveal-stagger');
+                    children.forEach((child, i) => {
+                        setTimeout(() => child.classList.add('visible'), i * 120);
+                    });
+                    staggerObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.cards-grid, .status-grid, .monitor-grid').forEach(grid => {
+            grid.querySelectorAll('.card, .status-item, .monitor-card').forEach(child => {
+                child.classList.add('reveal-stagger');
+            });
+            staggerObserver.observe(grid);
+        });
+
+        // ─── Logo Entrance Animation ───
+        setTimeout(() => {
+            document.getElementById('logoContainer').classList.add('animate-in');
+        }, 300);
+
+        // ─── Logo Parallax on Scroll ───
+        const logoEl = document.getElementById('logoContainer');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            if (scrollY < 800) {
+                const offset = scrollY * 0.35;
+                const scale = 1 - scrollY * 0.0004;
+                const rotate = scrollY * 0.02;
+                logoEl.style.transform = `translateY(${offset}px) scale(${Math.max(scale, 0.7)}) rotate(${rotate}deg)`;
+                logoEl.style.opacity = Math.max(1 - scrollY * 0.0015, 0);
+            }
+        });
+
+        // ─── Logo 3D Tilt on Mouse Move ───
+        logoEl.addEventListener('mousemove', (e) => {
+            const rect = logoEl.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            const logo = logoEl.querySelector('.hero-logo');
+            logo.style.transform = `rotateY(${x * 25}deg) rotateX(${-y * 25}deg) scale(1.05)`;
+        });
+
+        logoEl.addEventListener('mouseleave', () => {
+            const logo = logoEl.querySelector('.hero-logo');
+            logo.style.transform = '';
+        });
+
+        // ─── Active Nav Link Tracking ───
+        const sections = document.querySelectorAll('.section[id]');
+        const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+
+        const navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => link.classList.remove('active-link'));
+                    const activeLink = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+                    if (activeLink) activeLink.classList.add('active-link');
+                }
+            });
+        }, { threshold: 0.3, rootMargin: '-80px 0px -50% 0px' });
+        sections.forEach(s => navObserver.observe(s));
+
+        // ─── Ripple Effect ───
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                const rect = this.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // ─── Smooth Scroll with Offset ───
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                e.preventDefault();
+                const target = document.querySelector(targetId);
+                if (target) {
+                    const offset = 80;
+                    const y = target.getBoundingClientRect().top + window.scrollY - offset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            });
+        });
+
+        // ─── Service Status Check ───
+        const services = [
+            { name: 'Nginx Portal', port: 8080, icon: 'fa-globe' },
+            { name: 'Flask API', port: 5000, icon: 'fa-flask', path: '/health' },
+            { name: 'React App', port: 3002, icon: 'fa-react', fab: true },
+            { name: 'PostgreSQL', port: 5432, icon: 'fa-database' },
+            { name: 'Redis', port: 6379, icon: 'fa-bolt' },
+            { name: 'Grafana', port: 3001, icon: 'fa-chart-area' },
+            { name: 'Prometheus', port: 9090, icon: 'fa-fire' },
+            { name: 'Portainer', port: 9000, icon: 'fa-docker', fab: true },
+        ];
+
+        const grid = document.getElementById('statusGrid');
+        services.forEach(s => {
+            const el = document.createElement('div');
+            el.className = 'status-item reveal';
+            el.innerHTML = `
+            <span class="status-dot" id="dot-${s.port}"></span>
+            <div class="status-info">
+                <div class="name"><i class="${s.fab ? 'fab' : 'fas'} ${s.icon}" style="margin-right:6px;opacity:0.6"></i>${s.name}</div>
+                <div class="detail" id="detail-${s.port}">Проверка...</div>
+            </div>
+            <span class="port-tag">:${s.port}</span>
+        `;
+            if (s.port !== 5432 && s.port !== 6379) {
+                el.style.cursor = 'pointer';
+                el.onclick = () => window.open(`http://${location.hostname}:${s.port}`, '_blank');
+            }
+            grid.appendChild(el);
+            observer.observe(el);
+        });
+
+        async function checkServices() {
+            for (const s of services) {
+                const dot = document.getElementById(`dot-${s.port}`);
+                const detail = document.getElementById(`detail-${s.port}`);
+                // Can't ping DB/Redis from browser — assume if this page loads, they're up
+                if (s.port === 5432 || s.port === 6379) {
+                    dot.className = 'status-dot online';
+                    detail.textContent = 'Внутренний сервис';
+                    continue;
+                }
+                try {
+                    const url = `http://${location.hostname}:${s.port}${s.path || '/'}`;
+                    const ctrl = new AbortController();
+                    setTimeout(() => ctrl.abort(), 3000);
+                    await fetch(url, { mode: 'no-cors', signal: ctrl.signal });
+                    dot.className = 'status-dot online';
+                    detail.textContent = 'Работает';
+                } catch {
+                    dot.className = 'status-dot offline';
+                    detail.textContent = 'Недоступен';
+                }
+            }
+        }
+        checkServices();
+        setInterval(checkServices, 15000);
+
+        // ─── Admin ───
         function openAdmin() {
             localStorage.removeItem('portal_auth');
             localStorage.removeItem('portal_token');
@@ -426,4 +1303,5 @@
         }
     </script>
 </body>
+
 </html>
