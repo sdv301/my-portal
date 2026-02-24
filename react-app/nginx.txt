@@ -1,0 +1,24 @@
+server {
+    listen 80;
+    server_name 10.50.57.107;
+    
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Главная настройка для SPA (Single Page Application)
+    location / {
+        # Если файл не найден (например, /dashboard), отдаем index.html
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Кэширование статики (картинки, стили)
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|woff2?|eot|ttf|svg)$ {
+        expires 6M;
+        access_log off;
+        add_header Cache-Control "public";
+    }
+
+    # Сжатие gzip для скорости
+    gzip on;
+    gzip_types text/plain application/xml text/css application/javascript;
+}

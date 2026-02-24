@@ -1,0 +1,677 @@
+{
+    "annotations": {
+        "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "panels": [
+        {
+            "id": 1,
+            "title": "Всего районов",
+            "type": "stat",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 0,
+                "y": 0
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#6366f1",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT COUNT(*) AS \"Районов\" FROM districts WHERE type = 'district';",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "title": "Категорий имущества",
+            "type": "stat",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 4,
+                "y": 0
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#10b981",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT COUNT(*) AS \"Категорий\" FROM item_categories;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "title": "Позиций номенклатуры",
+            "type": "stat",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 8,
+                "y": 0
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#f59e0b",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT COUNT(*) AS \"Позиций\" FROM items;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "title": "Всего распределений",
+            "type": "stat",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 12,
+                "y": 0
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#3b82f6",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT COUNT(*) AS \"Распределений\" FROM distributions;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "title": "Общая стоимость (руб.)",
+            "type": "stat",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 16,
+                "y": 0
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#ef4444",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "currencyRUB"
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT COALESCE(SUM(total_cost), 0) AS \"Стоимость\" FROM distributions;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "title": "Общее количество единиц",
+            "type": "stat",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 20,
+                "y": 0
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#8b5cf6",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT COALESCE(SUM(quantity), 0) AS \"Количество\" FROM distributions;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "title": "Стоимость по категориям",
+            "type": "piechart",
+            "gridPos": {
+                "h": 10,
+                "w": 8,
+                "x": 0,
+                "y": 5
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "single"
+                },
+                "pieType": "donut"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT ic.name AS \"Категория\", COALESCE(SUM(d.total_cost), 0) AS \"Стоимость\" FROM distributions d JOIN items i ON d.item_id = i.id JOIN item_categories ic ON i.category_id = ic.id GROUP BY ic.name ORDER BY \"Стоимость\" DESC;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "title": "Количество по категориям",
+            "type": "piechart",
+            "gridPos": {
+                "h": 10,
+                "w": 8,
+                "x": 8,
+                "y": 5
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "single"
+                },
+                "pieType": "donut"
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT ic.name AS \"Категория\", COALESCE(SUM(d.quantity), 0) AS \"Количество\" FROM distributions d JOIN items i ON d.item_id = i.id JOIN item_categories ic ON i.category_id = ic.id GROUP BY ic.name ORDER BY \"Количество\" DESC;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "title": "Распределение по годам",
+            "type": "barchart",
+            "gridPos": {
+                "h": 10,
+                "w": 8,
+                "x": 16,
+                "y": 5
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "vertical",
+                "showValue": "auto",
+                "stacking": "none",
+                "groupWidth": 0.7,
+                "barWidth": 0.8
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT CAST(issue_year AS TEXT) AS \"Год\", COALESCE(SUM(total_cost), 0) AS \"Стоимость (руб.)\", COALESCE(SUM(quantity), 0) AS \"Количество\" FROM distributions WHERE issue_year IS NOT NULL GROUP BY issue_year ORDER BY issue_year;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "title": "Топ-15 районов по стоимости материальных резервов",
+            "type": "barchart",
+            "gridPos": {
+                "h": 12,
+                "w": 12,
+                "x": 0,
+                "y": 15
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "gradientMode": "hue"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
+                "groupWidth": 0.7,
+                "barWidth": 0.8
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT dist.name AS \"Район\", COALESCE(SUM(d.total_cost), 0) AS \"Стоимость (руб.)\" FROM distributions d JOIN districts dist ON d.district_id = dist.id GROUP BY dist.name ORDER BY SUM(d.total_cost) DESC LIMIT 15;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "title": "Топ-15 районов по количеству позиций",
+            "type": "barchart",
+            "gridPos": {
+                "h": 12,
+                "w": 12,
+                "x": 12,
+                "y": 15
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "gradientMode": "hue"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
+                "groupWidth": 0.7,
+                "barWidth": 0.8
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT dist.name AS \"Район\", COUNT(d.id) AS \"Позиций\", COALESCE(SUM(d.quantity), 0) AS \"Единиц\" FROM distributions d JOIN districts dist ON d.district_id = dist.id GROUP BY dist.name ORDER BY COUNT(d.id) DESC LIMIT 15;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 12,
+            "title": "Средняя стоимость позиции по категориям",
+            "type": "barchart",
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 0,
+                "y": 27
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "currencyRUB"
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
+                "groupWidth": 0.7,
+                "barWidth": 0.8
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT ic.name AS \"Категория\", ROUND(AVG(d.total_cost), 2) AS \"Средняя стоимость\" FROM distributions d JOIN items i ON d.item_id = i.id JOIN item_categories ic ON i.category_id = ic.id GROUP BY ic.name ORDER BY AVG(d.total_cost) DESC;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 13,
+            "title": "Среднее количество на район по годам",
+            "type": "barchart",
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 12,
+                "y": 27
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "vertical",
+                "showValue": "auto",
+                "stacking": "none",
+                "groupWidth": 0.7,
+                "barWidth": 0.8
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT CAST(d.issue_year AS TEXT) AS \"Год\", ROUND(AVG(d.quantity), 2) AS \"Среднее кол-во\", ROUND(AVG(d.total_cost), 2) AS \"Средняя стоимость\" FROM distributions d WHERE d.issue_year IS NOT NULL GROUP BY d.issue_year ORDER BY d.issue_year;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "title": "Население районов",
+            "type": "barchart",
+            "gridPos": {
+                "h": 12,
+                "w": 12,
+                "x": 0,
+                "y": 37
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "fixedColor": "#6366f1",
+                        "mode": "fixed"
+                    },
+                    "custom": {
+                        "gradientMode": "hue"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
+                "groupWidth": 0.7,
+                "barWidth": 0.85
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT name AS \"Район\", population AS \"Население\" FROM districts WHERE type = 'district' AND population IS NOT NULL ORDER BY population DESC LIMIT 20;",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "title": "Полная таблица распределения",
+            "type": "table",
+            "gridPos": {
+                "h": 12,
+                "w": 12,
+                "x": 12,
+                "y": 37
+            },
+            "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "react-sqlite"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Стоимость"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "currencyRUB"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "showHeader": true,
+                "sortBy": [
+                    {
+                        "displayName": "Стоимость",
+                        "desc": true
+                    }
+                ]
+            },
+            "targets": [
+                {
+                    "rawSql": "SELECT dist.name AS \"Район\", ic.name AS \"Категория\", i.name AS \"Наименование\", d.quantity AS \"Кол-во\", i.unit AS \"Ед.изм.\", d.total_cost AS \"Стоимость\", d.issue_year AS \"Год\" FROM distributions d JOIN districts dist ON d.district_id = dist.id JOIN items i ON d.item_id = i.id JOIN item_categories ic ON i.category_id = ic.id ORDER BY d.total_cost DESC LIMIT 100;",
+                    "refId": "A"
+                }
+            ]
+        }
+    ],
+    "schemaVersion": 39,
+    "tags": [
+        "react",
+        "reserves",
+        "analytics"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-1y",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Материальные резервы — Аналитика",
+    "uid": "reserves-overview-v1",
+    "version": 1
+}

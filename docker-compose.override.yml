@@ -1,19 +1,20 @@
 services:
   flask-app:
     volumes:
-      - ./flask-app:/run
+      - ./flask-app:/app
       - ./flask-app/logs:/app/logs
     command: python run.py
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
-  
+
   react-app:
     volumes:
       - ./react-app:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
-    
+
     ports:
       - "3000:3000"
+      - "4000:4000"

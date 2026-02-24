@@ -1,0 +1,29 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: portal_db
+    user: ${DB_USER}
+    secureJsonData:
+      password: ${DB_PASSWORD}
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 5
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false
+    isDefault: true
+    editable: true
+
+  - name: SQLite (React App)
+    type: frser-sqlite-datasource
+    uid: react-sqlite
+    access: proxy
+    jsonData:
+      path: /var/lib/grafana/sqlite/data.sqlite
+    isDefault: false
+    editable: true

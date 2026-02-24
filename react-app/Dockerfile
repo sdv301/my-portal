@@ -1,32 +1,24 @@
-# Этап 1: Сборка фронтенда
-FROM node:20-alpine as build
+# Этап 1 — сборка фронтенда
+FROM node:20-slim AS builder
 WORKDIR /app
 COPY package*.json ./
-# Устанавливаем все зависимости (включая devDependencies для сборки vite)
-RUN npm install 
+RUN npm ci
 COPY . .
 RUN npm run build
 
-# Этап 2: Запуск сервера (Node.js)
-FROM node:20-alpine
+
+# Этап 2 — запуск (отдаём через твой express сервер)
+FROM node:20-slim
 WORKDIR /app
-
-# Копируем зависимости и серверный код
-COPY package*.json ./
-# Устанавливаем только production-зависимости (без vite и т.д.)
-RUN npm install --omit=dev
-
-# Копируем скомпилированный фронтенд из первого этапа в папку, 
-# которую сервер сможет раздавать (обычно public или dist)
-COPY --from=build /app/dist ./dist
-COPY src/server.cjs ./src/
-COPY data.sqlite ./data.sqlite
-
-# Если серверу нужны дополнительные файлы (например, geojson)
-COPY public/districts.geojson ./public/
-
-# Открываем порт, который указан в server.cjs (5000)
-EXPOSE 5000
-
-# Запускаем сервер
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/src/server.cjs ./src/
+COPY --from=builder /app/data.sqlite ./
+COPY --from=builder /app/schema.sql ./
+COPY --from=builder /app/init_db.cjs ./
+# скопируй другие нужные файлы бэкенда, если они есть
+RUN npm ci --omit=dev
+RUN mkdir -p uploads
+EXPOSE 4000
+ENV NODE_ENV=production
 CMD ["node", "src/server.cjs"]

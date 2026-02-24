@@ -1,15 +1,18 @@
 // Автоматическая конфигурация проектов
+// Используем текущий hostname браузера для доступа с любого IP
+const CURRENT_HOST = window.location.hostname;
+
 const PROJECTS_CONFIG = {
     flask: {
         name: "Flask API",
-        path: "http://localhost:5000",      // Прямая ссылка на порт
+        path: `http://${CURRENT_HOST}:5000`,
         port: 5000,
         healthEndpoint: "/health",
         icon: "🐍"
     },
     react: {
-        name: "React App", 
-        path: "http://localhost:3002",      // Прямая ссылка на порт (мы сменили 3000 на 3002)
+        name: "React App",
+        path: `http://${CURRENT_HOST}:3002`,
         port: 3002,
         healthEndpoint: "/",
         icon: "⚛️"
@@ -21,21 +24,21 @@ async function updateProjectStatus() {
     for (const [key, config] of Object.entries(PROJECTS_CONFIG)) {
         try {
             // Используем mode: 'no-cors' для проверки доступности с другого порта
-            await fetch(`${config.path}${config.healthEndpoint}`, { 
+            await fetch(`${config.path}${config.healthEndpoint}`, {
                 method: 'HEAD',
                 mode: 'no-cors',
                 cache: 'no-store'
             });
-            
+
             const badge = document.querySelector(`#${key}-status`);
-            if(badge) {
+            if (badge) {
                 badge.textContent = '● Онлайн';
                 badge.style.color = '#10b981'; // Зеленый
                 badge.style.background = '#dcfce7';
             }
         } catch {
             const badge = document.querySelector(`#${key}-status`);
-            if(badge) {
+            if (badge) {
                 badge.textContent = '● Офлайн';
                 badge.style.color = '#ef4444'; // Красный
                 badge.style.background = '#fee2e2';

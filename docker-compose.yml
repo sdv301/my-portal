@@ -1,14 +1,11 @@
 version: '3.8'
 
 services:
-  # 1. Основной портал (Теперь это главный вход)
+  # 1. Основной портал (Nginx)
   portal:
     build: ./landing
     ports:
-      - "8080:80"   # Сайт будет доступен на http://localhost:8080
-    volumes:
-      - ./landing:/usr/share/nginx/html
-      - ./landing/nginx.conf:/etc/nginx/conf.d/default.conf # Пробрасываем исправленный конфиг
+      - "8080:80"
     environment:
       - ADMIN_USER=${ADMIN_USER}
       - ADMIN_PASS_HASH=${ADMIN_PASS_HASH}
@@ -22,14 +19,14 @@ services:
   # 2. Flask API
   flask-app:
     build: ./flask-app
-    # Запуск через gunicorn
-    command: gunicorn --bind 0.0.0.0:5000 run:app
+    # Добавляем таймаут и логирование для gunicorn, чтобы видеть ошибки
+    command: gunicorn --bind 0.0.0.0:5000 --timeout 120 --log-level debug run:app
     expose:
       - "5000"
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=${FLASK_SECRET_KEY}
-      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/portal_db
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/portal_db
     networks:
       - portal-network
       - backend-network
@@ -39,18 +36,21 @@ services:
     ports:
       - "5000:5000"
 
-  # 3. React App
+  # 3. React App (Dev Mode: UI + Backend в одном контейнере)
   react-app:
-    build: 
+    build:
       context: ./react-app
-      args:
-        - NODE_ENV=production
-    expose:
-      - "80"
+      dockerfile: Dockerfile
+    volumes:
+      - ./react-app:/app
+      - react_data:/app/sqlite_data
+    ports:
+      - "3002:4000" # Express backend (production)
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
     networks:
       - portal-network
-    ports:
-      - "3002:80"
 
   # 4. Postgres
   postgres:
@@ -75,7 +75,7 @@ services:
     networks:
       - backend-network
 
-  # 6. Мониторинг (Prometheus)
+  # 6. Prometheus
   prometheus:
     image: prom/prometheus
     volumes:
@@ -87,16 +87,33 @@ services:
       - monitoring-network
       - portal-network
 
-  # 7. Мониторинг (Grafana)
+  # 7. Grafana
   grafana:
     image: grafana/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana-dashboards:/var/lib/grafana/dashboards
+      - react_data:/var/lib/grafana/sqlite:ro
     ports:
       - "3001:3000"
     networks:
       - monitoring-network
       - portal-network
+      - backend-network
+    depends_on:
+      - postgres
+      - react-app
 
   # 8. Portainer
   portainer:
@@ -105,13 +122,11 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      # Для Portainer оставляем так, он обычно справляется лучше Traefik
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     networks:
       - portal-network
 
-  
 networks:
   portal-network:
     driver: bridge
@@ -126,3 +141,4 @@ volumes:
   prometheus_data:
   grafana_data:
   portainer_data:
+  react_data:

@@ -14,29 +14,24 @@ if (!fs.existsSync('uploads')) {
   fs.mkdirSync('uploads');
 }
 
-const PORT = 5000;
+const PORT = 4000;
 
 app.use(cors());
 app.use(express.json());
 
-// --- ДОБАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ---
-
-// 1. Указываем папку со статикой (результат сборки фронтенда)
-// В Dockerfile мы копируем билд в папку /app/dist
-app.use(express.static(path.join(__dirname, '../dist')));
-
-// 2. Обработка маршрутов React (чтобы при обновлении страницы не было 404)
-app.get('*', (req, res, next) => {
-  // Если запрос начинается с /api, пропускаем его к обработчикам API ниже
-  if (req.path.startsWith('/api')) {
-    return next();
-  }
-  // Все остальные запросы отдают index.html
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
-});
-
 const dbPath = path.resolve(__dirname, '../data.sqlite');
 const db = new sqlite3.Database(dbPath);
+
+// --- Синхронизация SQLite для Grafana ---
+const SQLITE_SHARE_DIR = path.resolve(__dirname, '../sqlite_data');
+function syncSqliteForGrafana() {
+  try {
+    if (!fs.existsSync(SQLITE_SHARE_DIR)) fs.mkdirSync(SQLITE_SHARE_DIR, { recursive: true });
+    fs.copyFileSync(dbPath, path.join(SQLITE_SHARE_DIR, 'data.sqlite'));
+  } catch (e) { /* shared volume may not be mounted in dev */ }
+}
+syncSqliteForGrafana();
+setInterval(syncSqliteForGrafana, 60000); // sync every 60s
 
 // --- API эндпоинты ---
 
@@ -67,19 +62,6 @@ app.get('/api/district/:id', (req, res) => {
   db.get('SELECT * FROM districts WHERE id = ? OR name = ?', [id, id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'Район не найден' });
-    res.json(row);
-  });
-});
-
-// API: Получить информацию о районе (ИСПРАВЛЕНО ДЛЯ SQLITE)
-app.get('/api/district/:id', (req, res) => {
-  const { id } = req.params;
-  
-  db.get('SELECT * FROM districts WHERE id = ? OR name = ?', [id, id], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: 'Район не найден' });
-    
-    // Возвращаем данные района из базы
     res.json(row);
   });
 });
@@ -129,7 +111,7 @@ app.get('/api/district/:id/data', (req, res) => {
       rows.forEach(row => {
         const cat = row.category_name || 'Разное';
         if (!inventory[cat]) inventory[cat] = [];
-        
+
         inventory[cat].push({
           name: row.item_name,
           unit: row.unit,
@@ -160,21 +142,21 @@ app.get('/api/district/:id/data', (req, res) => {
 // 5. Получить доп. инфо (статьи)
 app.get('/api/district/:id/info', (req, res) => {
   const { id } = req.params;
-  
+
   db.get('SELECT id FROM districts WHERE id = ? OR name = ?', [id, id], (err, district) => {
     if (err || !district) return res.status(404).json({});
-    
+
     // Берем данные из таблицы district_info (если она у тебя так называется)
     db.all('SELECT category, title, content, updated_at FROM district_info WHERE district_id = ?', [district.id], (err, rows) => {
       if (err) return res.status(500).json({});
-      
+
       const info = {};
       rows.forEach(r => {
         if (!info[r.category]) info[r.category] = [];
-        info[r.category].push({ 
-          title: r.title, 
-          content: r.content, 
-          updatedAt: r.updated_at 
+        info[r.category].push({
+          title: r.title,
+          content: r.content,
+          updatedAt: r.updated_at
         });
       });
       res.json(info);
@@ -186,7 +168,7 @@ app.get('/api/district/:id/info', (req, res) => {
 app.post('/api/data', (req, res) => {
   const { district_id, indicator_id, date, value, source } = req.body;
   const sql = `INSERT OR REPLACE INTO data_values (district_id, indicator_id, date, value, source) VALUES (?, ?, ?, ?, ?)`;
-  db.run(sql, [district_id, indicator_id, date, value, source], function(err) {
+  db.run(sql, [district_id, indicator_id, date, value, source], function (err) {
     if (err) return res.status(500).json({ success: false, error: err.message });
     res.json({ success: true, id: this.lastID });
   });
@@ -211,7 +193,7 @@ app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
 
     // Вспомогательные функции, чтобы заставить БД ждать (Promises)
     const runDb = (sql, params) => new Promise((resolve, reject) => {
-      db.run(sql, params, function(err) {
+      db.run(sql, params, function (err) {
         if (err) reject(err); else resolve(this.lastID);
       });
     });
@@ -249,7 +231,7 @@ app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
 
         // 1. Сохраняем товар с ПРАВИЛЬНОЙ категорией
         const itemId = await runDb(
-          `INSERT INTO items (category_id, name, unit, unit_price) VALUES (?, ?, ?, ?)`, 
+          `INSERT INTO items (category_id, name, unit, unit_price) VALUES (?, ?, ?, ?)`,
           [currentCategoryId, itemName, unit, price]
         );
 
@@ -257,13 +239,13 @@ app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
         for (const colIndex of Object.keys(colToDistrict)) {
           const qtyCol = parseInt(colIndex);
           const costCol = qtyCol + 1;
-          
+
           const quantity = parseFloat(row[qtyCol]) || 0;
           const cost = parseFloat(row[costCol]) || 0;
 
           if (quantity > 0) {
             await runDb(
-              `INSERT INTO distributions (district_id, item_id, issue_year, quantity, total_cost) VALUES (?, ?, 2025, ?, ?)`, 
+              `INSERT INTO distributions (district_id, item_id, issue_year, quantity, total_cost) VALUES (?, ?, 2025, ?, ?)`,
               [colToDistrict[colIndex], itemId, quantity, cost]
             );
             recordsAdded++;
@@ -285,10 +267,10 @@ app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
 // --- ДОБАВЛЕНО: Проверка наличия данных для Excel ---
 app.get('/api/check-export', (req, res) => {
   const { startDate, endDate, district_id } = req.query;
-  
+
   let baseSql = "SELECT COUNT(*) as count, MAX(issue_year) as latest_year FROM distributions WHERE quantity > 0";
   const baseParams = [];
-  
+
   if (district_id && district_id !== 'all') {
     baseSql += " AND district_id = ?";
     baseParams.push(district_id);
@@ -307,17 +289,17 @@ app.get('/api/check-export', (req, res) => {
 
   db.get(checkSql, checkParams, (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
-    
+
     // Если данные за этот период есть
     if (row && row.count > 0) {
       res.json({ hasData: true });
     } else {
       // Если данных нет, ищем, в каком году были самые свежие записи
       db.get(baseSql, baseParams, (err2, row2) => {
-         res.json({ 
-           hasData: false, 
-           latest_year: row2 && row2.latest_year ? row2.latest_year : null 
-         });
+        res.json({
+          hasData: false,
+          latest_year: row2 && row2.latest_year ? row2.latest_year : null
+        });
       });
     }
   });
@@ -336,7 +318,7 @@ app.get('/api/date-range', (req, res) => {
 // --- ИСПРАВЛЕННЫЙ ЭКСПОРТ В EXCEL (Материальные резервы) ---
 app.get('/api/export-excel', (req, res) => {
   const { startDate, endDate, district_id } = req.query;
-  
+
   let sql = `
     SELECT 
       d.name as "Район/Ведомство", 
@@ -352,9 +334,9 @@ app.get('/api/export-excel', (req, res) => {
     JOIN item_categories c ON i.category_id = c.id
     WHERE dist.quantity > 0
   `;
-  
+
   const params = [];
-  
+
   // Фильтр по датам (пока фильтруем по году, так как в базе лежит issue_year)
   if (startDate && endDate) {
     const startYear = parseInt(startDate.split('-')[0]);
@@ -378,7 +360,7 @@ app.get('/api/export-excel', (req, res) => {
     try {
       // Формируем Excel
       const ws = xlsx.utils.json_to_sheet(rows);
-      
+
       // Настраиваем ширину колонок для красоты
       ws['!cols'] = [
         { wch: 25 }, // Район
@@ -393,10 +375,10 @@ app.get('/api/export-excel', (req, res) => {
       const wb = xlsx.utils.book_new();
       xlsx.utils.book_append_sheet(wb, ws, "Материальные резервы");
       const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
-      
+
       // Кодируем имя файла, чтобы русские буквы не ломались в браузере
       const fileName = encodeURIComponent('Выдача_МЦ_Якутия.xlsx');
-      
+
       res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fileName}`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.send(buf);
@@ -418,5 +400,16 @@ app.get('/api/download-template', (req, res) => {
 });
 
 app.get('/', (req, res) => res.json({ message: '🚀 API Yakutia Map Online' }));
+
+// ─── Production: раздаём собранный React ────────────────────────────────
+if (process.env.NODE_ENV === 'production') {
+  // Отдаём статику из dist
+  app.use(express.static(path.join(__dirname, 'dist')));
+
+  // Все остальные пути → index.html (для React Router)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 app.listen(PORT, () => console.log(`✅ Server: http://localhost:${PORT}`));

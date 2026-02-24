@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель - Портал проектов</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         :root {
             --primary: #4f46e5;
@@ -31,9 +32,13 @@
             --border-color: #334155;
             --light: #334155;
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-body);
@@ -41,9 +46,12 @@
             height: 100vh;
             overflow: hidden;
         }
-        
-        .admin-container { display: flex; height: 100%; }
-        
+
+        .admin-container {
+            display: flex;
+            height: 100%;
+        }
+
         /* Сайдбар */
         .sidebar {
             width: 260px;
@@ -52,7 +60,7 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .logo {
             padding: 25px;
             border-bottom: 1px solid var(--border-color);
@@ -63,10 +71,17 @@
             align-items: center;
             gap: 10px;
         }
-        
-        .nav-menu { list-style: none; padding: 20px 15px; flex: 1; }
-        .nav-item { margin-bottom: 5px; }
-        
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 15px;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
         .nav-link {
             display: flex;
             align-items: center;
@@ -79,13 +94,24 @@
             cursor: pointer;
             font-weight: 500;
         }
-        
-        .nav-link:hover { background: var(--light); color: var(--primary); }
-        .nav-link.active { background: var(--primary); color: white; }
-        
+
+        .nav-link:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
         /* Контент */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -101,7 +127,7 @@
             gap: 25px;
             margin-bottom: 30px;
         }
-        
+
         .stat-card {
             background: var(--bg-card);
             padding: 25px;
@@ -109,11 +135,22 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
         }
-        
-        .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-main); margin-top: 5px; }
-        .stat-card.success .stat-value { color: var(--success); }
-        .stat-card.warning .stat-value { color: var(--warning); }
-        
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 5px;
+        }
+
+        .stat-card.success .stat-value {
+            color: var(--success);
+        }
+
+        .stat-card.warning .stat-value {
+            color: var(--warning);
+        }
+
         .table-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -123,11 +160,25 @@
             border: 1px solid var(--border-color);
             overflow-x: auto;
         }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; border-bottom: 2px solid var(--border-color); color: var(--text-secondary); }
-        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
         .status-badge {
             padding: 6px 12px;
             border-radius: 20px;
@@ -135,11 +186,27 @@
             font-weight: 600;
             display: inline-block;
         }
-        .status-online { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-offline { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        .status-check { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .status-internal { background: rgba(139, 92, 246, 0.1); color: #a78bfa; }
-        
+
+        .status-online {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-check {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-internal {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+        }
+
         .btn {
             padding: 8px 16px;
             border-radius: 8px;
@@ -150,10 +217,23 @@
             text-decoration: none;
             display: inline-block;
         }
-        .btn:hover { opacity: 0.9; }
-        .btn-sm { padding: 5px 12px; font-size: 0.85rem; }
-        .btn-primary { background: var(--primary); }
-        .btn-dark { background: #334155; }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-dark {
+            background: #334155;
+        }
 
         /* Консоль */
         .console-window {
@@ -165,25 +245,35 @@
             height: 400px;
             overflow-y: auto;
         }
-        .console-line { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; }
+
+        .console-line {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
     </style>
 </head>
+
 <body>
     <div class="admin-container">
         <nav class="sidebar">
             <div class="logo"><i class="fas fa-shield-alt"></i> Админ-Панель</div>
             <ul class="nav-menu">
-                <li class="nav-item"><a class="nav-link active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Дашборд</a></li>
-                <li class="nav-item"><a class="nav-link" data-tab="projects"><i class="fas fa-rocket"></i> Проекты</a></li>
-                <li class="nav-item"><a class="nav-link" data-tab="monitoring"><i class="fas fa-server"></i> Мониторинг</a></li>
-                <li class="nav-item"><a class="nav-link" data-tab="tools"><i class="fas fa-tools"></i> Инструменты</a></li>
+                <li class="nav-item"><a class="nav-link active" data-tab="dashboard"><i class="fas fa-chart-line"></i>
+                        Дашборд</a></li>
+                <li class="nav-item"><a class="nav-link" data-tab="projects"><i class="fas fa-rocket"></i> Проекты</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" data-tab="monitoring"><i class="fas fa-server"></i>
+                        Мониторинг</a></li>
+                <li class="nav-item"><a class="nav-link" data-tab="tools"><i class="fas fa-tools"></i> Инструменты</a>
+                </li>
                 <li class="nav-item"><a class="nav-link" data-tab="logs"><i class="fas fa-terminal"></i> Логи</a></li>
                 <li style="margin-top: auto; padding: 20px 15px 0; border-top: 1px solid var(--border-color);">
                     <a href="/" class="nav-link"><i class="fas fa-home"></i> На сайт</a>
                 </li>
             </ul>
         </nav>
-        
+
         <main class="main-content">
             <header class="header">
                 <h2 id="pageTitle">Дашборд</h2>
@@ -192,7 +282,7 @@
                     <button id="themeToggle" class="btn btn-dark btn-sm"><i class="fas fa-moon"></i></button>
                 </div>
             </header>
-            
+
             <!-- Дашборд -->
             <div id="dashboardTab" class="tab-pane">
                 <div class="stats-grid">
@@ -244,13 +334,15 @@
                                 <td><strong>React App</strong></td>
                                 <td>Frontend (Vite)</td>
                                 <td>3002</td>
-                                <td><button class="btn btn-primary btn-sm" onclick="openLink('http://10.50.57.107:3002')">Открыть</button></td>
+                                <td><button class="btn btn-primary btn-sm"
+                                        onclick="openLink('http://'+location.hostname+':3002')">Открыть</button></td>
                             </tr>
                             <tr>
                                 <td><strong>Flask API</strong></td>
                                 <td>Backend (Python)</td>
                                 <td>5000</td>
-                                <td><button class="btn btn-primary btn-sm" onclick="openLink('http://10.50.57.107:5000')">Открыть</button></td>
+                                <td><button class="btn btn-primary btn-sm"
+                                        onclick="openLink('http://'+location.hostname+':5000')">Открыть</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -283,19 +375,22 @@
                         <h4><i class="fas fa-search"></i> Prometheus</h4>
                         <p>Сбор и хранение метрик</p>
                         <span id="status-prometheus" class="status-badge status-check">Checking...</span><br><br>
-                        <button class="btn btn-primary" onclick="openLink('http://10.50.57.107:9090')">Открыть Prometheus</button>
+                        <button class="btn btn-primary" onclick="openLink('http://'+location.hostname+':9090')">Открыть
+                            Prometheus</button>
                     </div>
                     <div class="stat-card">
                         <h4><i class="fas fa-chart-bar"></i> Grafana</h4>
                         <p>Визуализация и дашборды</p>
                         <span id="status-grafana" class="status-badge status-check">Checking...</span><br><br>
-                        <button class="btn btn-primary" onclick="openLink('http://10.50.57.107:3001')">Открыть Grafana</button>
+                        <button class="btn btn-primary" onclick="openLink('http://'+location.hostname+':3001')">Открыть
+                            Grafana</button>
                     </div>
                     <div class="stat-card">
                         <h4><i class="fas fa-docker"></i> Portainer</h4>
                         <p>Управление контейнерами</p>
                         <span id="status-portainer" class="status-badge status-check">Checking...</span><br><br>
-                        <button class="btn btn-primary" onclick="openLink('http://10.50.57.107:9000')">Открыть Portainer</button>
+                        <button class="btn btn-primary" onclick="openLink('http://'+location.hostname+':9000')">Открыть
+                            Portainer</button>
                     </div>
                 </div>
             </div>
@@ -305,7 +400,8 @@
                 <h3><i class="fas fa-history"></i> Логи системы</h3>
                 <div class="console-window" id="consoleLogs">
                     <div class="console-line">[SYSTEM] Admin panel initialized.</div>
-                    <div class="console-line">[SYSTEM] Monitoring: Portal, Flask, React, Prometheus, Grafana, Portainer, Postgres, Redis.</div>
+                    <div class="console-line">[SYSTEM] Monitoring: Portal, Flask, React, Prometheus, Grafana, Portainer,
+                        Postgres, Redis.</div>
                 </div>
             </div>
         </main>
@@ -313,7 +409,7 @@
 
     <script>
         // Авторизация
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             const token = localStorage.getItem('portal_token');
             const auth = localStorage.getItem('portal_auth');
             if (!token || !auth) {
@@ -335,13 +431,14 @@
         }
 
         // Сервисы
+        const HOST = location.hostname;
         const services = [
-            { name: "Portal (Nginx)", url: "http://10.50.57.107:8080", health: "http://10.50.57.107:8080", port: 8080 },
-            { name: "Flask API", url: "http://10.50.57.107:5000", health: "http://10.50.57.107:5000/health", port: 5000 },
-            { name: "React App", url: "http://10.50.57.107:3002", health: "http://10.50.57.107:3002/", port: 3002 },
-            { name: "Prometheus", url: "http://10.50.57.107:9090", health: "http://10.50.57.107:9090/-/healthy", port: 9090 },
-            { name: "Grafana", url: "http://10.50.57.107:3001", health: "http://10.50.57.107:3001/api/health", port: 3001 },
-            { name: "Portainer", url: "http://10.50.57.107:9000", health: "http://10.50.57.107:9000/", port: 9000 },
+            { name: "Portal (Nginx)", url: `http://${HOST}:8080`, health: `http://${HOST}:8080`, port: 8080 },
+            { name: "Flask API", url: `http://${HOST}:5000`, health: `http://${HOST}:5000/health`, port: 5000 },
+            { name: "React App", url: `http://${HOST}:3002`, health: `http://${HOST}:3002/`, port: 3002 },
+            { name: "Prometheus", url: `http://${HOST}:9090`, health: `http://${HOST}:9090/-/healthy`, port: 9090 },
+            { name: "Grafana", url: `http://${HOST}:3001`, health: `http://${HOST}:3001/api/health`, port: 3001 },
+            { name: "Portainer", url: `http://${HOST}:9000`, health: `http://${HOST}:9000/`, port: 9000 },
             { name: "Postgres Database", url: "#", health: null, port: 5432 },
             { name: "Redis Cache", url: "#", health: null, port: 6379 }
         ];
@@ -418,7 +515,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${s.name}</strong></td>
-                        <td>10.50.57.107:${s.port}</td>
+                        <td>${HOST}:${s.port}</td>
                         <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
                         <td>
                             ${s.url !== '#' ? `<button class="btn btn-primary btn-sm" onclick="openLink('${s.url}')">Открыть</button>` : '-'}
@@ -488,7 +585,7 @@
         }
 
         async function updateCharts() {
-            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
             // CPU (%)
             let cpuVal = Math.floor(Math.random() * 30) + 5;
@@ -512,7 +609,7 @@
             try {
                 const val = await queryPrometheus('process_resident_memory_bytes / 1024 / 1024');
                 if (val !== null) memVal = val;
-            } catch {}
+            } catch { }
             updateChart(memoryChart, memVal, time);
 
             // Ingest rate
@@ -520,7 +617,7 @@
             try {
                 const val = await queryPrometheus('rate(prometheus_tsdb_samples_appended_total[5m])');
                 if (val !== null) ingestVal = val;
-            } catch {}
+            } catch { }
             updateChart(ingestChart, ingestVal, time);
         }
 
@@ -545,4 +642,5 @@
         }
     </script>
 </body>
+
 </html>

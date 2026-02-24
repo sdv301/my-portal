@@ -15,6 +15,10 @@
             --accent: #6366f1;
             --glow: rgba(79, 70, 229, 0.6);
         }
+
+        html {
+            scroll-behavior: smooth;
+        }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -367,12 +371,12 @@
                 <div class="hero-subtitle">Система мониторинга и управления</div>
                 <h1>ПОРТАЛ ПРОЕКТОВ</h1>
                 <p>Единая точка входа для Flask API, React Frontend и инструментов аналитики.</p>
-                <a href="#" onclick="openAdmin()" class="btn">Начать работу</a>
+                <a href="#modules" class="btn">Начать работу</a>
             </div>
         </div>
     </section>
 
-    <section class="projects">
+    <section class="projects" id="modules">
         <div class="container">
             <h2 class="section-title" data-aos="fade-up">Активные модули</h2>
             <div class="projects-grid">
@@ -385,7 +389,7 @@
                     <div class="project-content">
                         <h3>Мат.резерв</h3>
                         <p>Frontend приложение на базе Vite. Мгновенная загрузка, современный UI и полная интеграция с API.</p>
-                        <a href="http://10.50.57.107:3002" target="_blank" class="btn" style="background: #3b82f6;">Открыть</a>
+                        <a href="#" onclick="window.open('http://'+location.hostname+':3002','_blank')" class="btn" style="background: #3b82f6;">Открыть</a>
                     </div>
                 </div>
                 
@@ -397,7 +401,7 @@
                     <div class="project-content">
                         <h3>Топливообеспечение</h3>
                         <p>Надежный Backend сервер. RESTful архитектура, работа с базой данных PostgreSQL и JWT авторизация.</p>
-                        <a href="http://10.50.57.107:5000" target="_blank" class="btn" style="background: #10b981;">Открыть</a>
+                        <a href="#" onclick="window.open('http://'+location.hostname+':5000','_blank')" class="btn" style="background: #10b981;">Открыть</a>
                     </div>
                 </div>
 

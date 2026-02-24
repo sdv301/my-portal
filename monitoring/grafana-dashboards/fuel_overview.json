@@ -1,0 +1,409 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Всего компаний",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "#6366f1", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Компании\" FROM companies WHERE is_active = true;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Загружено файлов",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "#10b981", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Загружено\" FROM uploaded_files;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Работающие АЗС",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 4, "x": 8, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "#f59e0b", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COALESCE(SUM(total_working_azs), 0) AS \"АЗС\" FROM consolidated_data;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Средний запас АИ-92 (т.)",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 4, "x": 12, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "#ef4444", "value": null },
+              { "color": "#f59e0b", "value": 500 },
+              { "color": "#10b981", "value": 2000 }
+            ]
+          },
+          "min": 0,
+          "max": 10000
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COALESCE(AVG(total_stock_ai92), 0) AS \"АИ-92\" FROM consolidated_data;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Средний запас АИ-95 (т.)",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 4, "x": 16, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "#ef4444", "value": null },
+              { "color": "#f59e0b", "value": 200 },
+              { "color": "#10b981", "value": 1000 }
+            ]
+          },
+          "min": 0,
+          "max": 5000
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COALESCE(AVG(total_stock_ai95), 0) AS \"АИ-95\" FROM consolidated_data;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Средний запас дизеля (т.)",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "#ef4444", "value": null },
+              { "color": "#f59e0b", "value": 1000 },
+              { "color": "#10b981", "value": 5000 }
+            ]
+          },
+          "min": 0,
+          "max": 20000
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COALESCE(AVG(total_stock_diesel), 0) AS \"Дизель\" FROM consolidated_data;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Запасы топлива по компаниям",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 5 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.8
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT c.name AS \"Компания\", COALESCE(cd.total_stock_ai92, 0) AS \"АИ-92\", COALESCE(cd.total_stock_ai95, 0) AS \"АИ-95\", COALESCE(cd.total_stock_diesel, 0) AS \"Дизель\" FROM consolidated_data cd JOIN companies c ON cd.company_id = c.id ORDER BY c.name;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Реализация vs Потребность (месячная)",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 5 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.8
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT c.name AS \"Компания\", COALESCE(cd.total_monthly_ai92, 0) AS \"Реализация АИ-92\", COALESCE(cd.monthly_demand_ai92, 0) AS \"Потребность АИ-92\", COALESCE(cd.total_monthly_diesel, 0) AS \"Реализация Дизель\", COALESCE(cd.monthly_demand_ai95, 0) AS \"Потребность АИ-95\" FROM consolidated_data cd JOIN companies c ON cd.company_id = c.id ORDER BY c.name;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Потребность в топливе по месяцам",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 15 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "spanNulls": true,
+            "pointSize": 5,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "sum"] }
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT d.report_date AS time, COALESCE(SUM(d.monthly_gasoline_total), 0) AS \"Бензин (всего)\", COALESCE(SUM(d.monthly_diesel_total), 0) AS \"Дизель (всего)\" FROM sheet2_demand d GROUP BY d.report_date ORDER BY d.report_date;",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Загрузка файлов по дням",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 15 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "#6366f1", "mode": "fixed" },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "gradientMode": "hue",
+            "barAlignment": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT DATE(upload_date) AS time, COUNT(*) AS \"Загрузки\" FROM uploaded_files GROUP BY DATE(upload_date) ORDER BY DATE(upload_date);",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Структура компаний (АЗС и нефтебазы)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Работает АЗС" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              { "id": "thresholds", "value": { "steps": [{ "color": "#ef4444", "value": null }, { "color": "#10b981", "value": 5 }] } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Дата отчёта", "desc": true }]
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT c.name AS \"Компания\", s.report_date AS \"Дата отчёта\", COALESCE(s.oil_depots_count, 0) AS \"Нефтебаз\", COALESCE(s.azs_count, 0) AS \"Всего АЗС\", COALESCE(s.working_azs_count, 0) AS \"Работает АЗС\" FROM sheet1_structure s JOIN companies c ON s.company_id = c.id ORDER BY s.report_date DESC, c.name LIMIT 50;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Поставки по компаниям (сумма за период)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Всего бензин", "desc": true }]
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT c.name AS \"Компания\", COALESCE(SUM(s.supply_ai92), 0) AS \"АИ-92\", COALESCE(SUM(s.supply_ai95), 0) AS \"АИ-95\", COALESCE(SUM(s.supply_ai92) + SUM(s.supply_ai95), 0) AS \"Всего бензин\", COALESCE(SUM(s.supply_diesel_winter) + SUM(s.supply_diesel_summer) + SUM(s.supply_diesel_arctic), 0) AS \"Всего дизель\" FROM sheet4_supply s JOIN companies c ON s.company_id = c.id GROUP BY c.name ORDER BY \"Всего бензин\" DESC;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Авиатопливо — баланс по аэропортам",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 33 },
+      "datasource": { "type": "postgres", "uid": "" },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Остаток", "desc": true }]
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT a.airport_name AS \"Аэропорт\", a.tzk_name AS \"ТЗК\", a.report_date AS \"Дата\", COALESCE(a.supply_month_start, 0) AS \"Поставка (с нач. мес.)\", COALESCE(a.monthly_demand, 0) AS \"Месячная потребность\", COALESCE(a.consumption_month_start, 0) AS \"Расход (с нач. мес.)\", COALESCE(a.end_of_day_balance, 0) AS \"Остаток\" FROM sheet6_aviation a ORDER BY a.report_date DESC, a.airport_name LIMIT 50;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["fuel", "portal", "analytics"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6M", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Топливообеспечение — Обзор",
+  "uid": "fuel-overview-v1",
+  "version": 1
+}
