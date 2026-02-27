@@ -3,7 +3,7 @@ services:
   portal:
     build: ./landing
     ports:
-      - "8080:80"
+      - "10.50.57.107:80:80"
     environment:
       - ADMIN_USER=${ADMIN_USER}
       - ADMIN_PASS_HASH=${ADMIN_PASS_HASH}
@@ -13,6 +13,7 @@ services:
     depends_on:
       - flask-app
       - react-app
+      - prometheus
 
   # 2. Flask API
   flask-app:
@@ -32,7 +33,7 @@ services:
       - postgres
       - redis
     ports:
-      - "5000:5000"
+      - "10.50.57.107:5000:5000"
 
   # 3. React App (Express + собранный React UI)
   react-app:
@@ -42,7 +43,7 @@ services:
     volumes:
       - react_data:/app/sqlite_data
     ports:
-      - "3002:4000"
+      - "10.50.57.107:3002:4000"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
@@ -79,7 +80,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     ports:
-      - "9090:9090"
+      - "10.50.57.107:9090:9090"
     networks:
       - monitoring-network
       - portal-network
@@ -94,7 +95,6 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
-      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:
@@ -102,9 +102,10 @@ services:
       - ./monitoring/grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./monitoring/grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./monitoring/grafana-dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana-plugins:/var/lib/grafana/plugins
       - react_data:/var/lib/grafana/sqlite:ro
     ports:
-      - "3001:3000"
+      - "10.50.57.107:3001:3000"
     networks:
       - monitoring-network
       - portal-network
@@ -159,7 +160,7 @@ services:
     image: portainer/portainer-ce:latest
     command: -H unix:///var/run/docker.sock
     ports:
-      - "9000:9000"
+      - "10.50.57.107:9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data

@@ -44,8 +44,8 @@ class TemplateReportGenerator:
             if not aggregated_data:
                 raise Exception("Нет данных в БД")
 
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f'Сводный_отчет_{timestamp}.xlsx'
+            timestamp = report_date.strftime('%d%m%Y')
+            filename = f'{timestamp}_Топливо_Респ_Саха_Якутия.xlsx'
             output_path = os.path.join(self.reports_dir, filename)
             
             shutil.copy2(self.template_path, output_path)
@@ -115,6 +115,14 @@ class TemplateReportGenerator:
                 return True
         except: 
             return False
+
+    def _extract_azs_count(self, location_name: str) -> int:
+        """Извлекает число АЗС из строки location_name.
+        Например: 'АЗС (97 шт)' -> 97, 'АЗС №5' -> 5, 'АЗС' -> 1"""
+        match = re.search(r'(\d+)', str(location_name))
+        if match:
+            return int(match.group(1))
+        return 1
 
     def _get_supplier_string(self, company_name: str) -> str:
         """Определяет строку поставщиков на основе имени компании"""
@@ -239,9 +247,11 @@ class TemplateReportGenerator:
             non_azs_locations = []
 
             for loc in sheet3_recs:
-                loc_name = str(loc.get('location_name', '')).lower()
-                if 'азс' in loc_name:
-                    azs_count += 1
+                loc_name_full = str(loc.get('location_name', ''))
+                loc_name_lower = loc_name_full.lower()
+                if 'азс' in loc_name_lower or loc_name_full.strip().isdigit() or 'шт' in loc_name_lower:
+                    # Извлекаем число АЗС из строки, а не считаем ряды
+                    azs_count += self._extract_azs_count(loc_name_full)
                     for key in azs_totals.keys():
                         azs_totals[key] += float(loc.get(key, 0) or 0)
                 else:
@@ -252,6 +262,7 @@ class TemplateReportGenerator:
                 self._set_cell_value(ws, current_row, 1, company_name, start_row)
                 # Для нефтебаз колонку B заполняем
                 self._set_cell_value(ws, current_row, 2, self._get_supplier_string(company_name), start_row)
+                # Колонка C: Нефтебаза — принадлежит конкретной компании
                 self._set_cell_value(ws, current_row, 3, loc.get('location_name', ''), start_row)
                 
                 self._set_cell_value(ws, current_row, 5, loc.get('stock_ai92', 0), start_row)
@@ -281,6 +292,7 @@ class TemplateReportGenerator:
             if azs_count > 0:
                 self._set_cell_value(ws, current_row, 1, company_name, start_row)
                 # Колонка 2 (B) для строки с АЗС ПРОПУСКАЕТСЯ по просьбе пользователя
+                # Колонка C: суммарное количество АЗС для данной компании
                 self._set_cell_value(ws, current_row, 3, f"АЗС ({azs_count} шт)", start_row)
                 
                 self._set_cell_value(ws, current_row, 5, azs_totals['stock_ai92'], start_row)
@@ -308,42 +320,74 @@ class TemplateReportGenerator:
 
     def _fill_supply_sheet_full(self, ws, aggregated_data: dict, report_date: date):
         start_row = 9
-        current_row = start_row
         current_month = report_date.strftime('%m')
         current_year = report_date.strftime('%Y')
         static_date = f"28.{current_month}.{current_year}"
         
+        # 1. Читаем все существующие строки шаблона (col B = название компании)
+        template_rows = {}  # company_name_lower -> row_number
+        for r in range(start_row, ws.max_row + 1):
+            cell_b = ws.cell(row=r, column=2).value
+            if cell_b and str(cell_b).strip():
+                template_rows[str(cell_b).strip().lower()] = r
+        
+        # Определяем первую свободную строку после шаблонных
+        next_free_row = max(template_rows.values()) + 1 if template_rows else start_row
+        filled_rows = set()
+        
         for company_name, company_data in aggregated_data.items():
             sheet4_recs = company_data.get('sheet4_data', [])
-            if not sheet4_recs:
-                continue
             
             totals = {
                 'supply_ai92': 0, 'supply_ai95': 0, 'supply_ai98_100': 0,
                 'supply_diesel_winter': 0, 'supply_diesel_arctic': 0, 'supply_diesel_summer': 0
             }
             
-            for supply in sheet4_recs:
-                for key in totals.keys():
-                    totals[key] += float(supply.get(key, 0) or 0)
+            if sheet4_recs:
+                for supply in sheet4_recs:
+                    for key in totals.keys():
+                        totals[key] += float(supply.get(key, 0) or 0)
+            
+            # Ищем совпадение по имени компании в существующих строках шаблона
+            target_row = None
+            company_lower = company_name.lower()
+            for tmpl_name, tmpl_row in template_rows.items():
+                if company_lower in tmpl_name or tmpl_name in company_lower:
+                    target_row = tmpl_row
+                    break
+            
+            # Если не найдено совпадение — добавляем в конец
+            if target_row is None:
+                target_row = next_free_row
+                next_free_row += 1
+            
+            filled_rows.add(target_row)
             
             # Колонка 1: Поставщик (из нашей функции)
-            self._set_cell_value(ws, current_row, 1, self._get_supplier_string(company_name), start_row)
+            self._set_cell_value(ws, target_row, 1, self._get_supplier_string(company_name), start_row)
             # Колонка 2: Название компании
-            self._set_cell_value(ws, current_row, 2, company_name, start_row)
+            self._set_cell_value(ws, target_row, 2, company_name, start_row)
             # Колонка 3: Нефтебаза - берем из функции _get_oil_depot_string
-            self._set_cell_value(ws, current_row, 3, self._get_oil_depot_string(company_name), start_row)
-            # Колонка 4: Дата поставки
-            self._set_cell_value(ws, current_row, 4, static_date, start_row)
-            
-            self._set_cell_value(ws, current_row, 6, totals['supply_ai92'], start_row)
-            self._set_cell_value(ws, current_row, 7, totals['supply_ai95'], start_row)
-            self._set_cell_value(ws, current_row, 8, totals['supply_ai98_100'], start_row)
-            self._set_cell_value(ws, current_row, 9, totals['supply_diesel_winter'], start_row)
-            self._set_cell_value(ws, current_row, 10, totals['supply_diesel_arctic'], start_row)
-            self._set_cell_value(ws, current_row, 11, totals['supply_diesel_summer'], start_row)
-            
-            current_row += 1
+            self._set_cell_value(ws, target_row, 3, self._get_oil_depot_string(company_name), start_row)
+            # Колонки 4-12: Дата и числовые данные (даже если 0)
+            self._set_cell_value(ws, target_row, 4, static_date, start_row)
+            self._set_cell_value(ws, target_row, 6, totals['supply_ai92'], start_row)
+            self._set_cell_value(ws, target_row, 7, totals['supply_ai95'], start_row)
+            self._set_cell_value(ws, target_row, 8, totals['supply_ai98_100'], start_row)
+            self._set_cell_value(ws, target_row, 9, totals['supply_diesel_winter'], start_row)
+            self._set_cell_value(ws, target_row, 10, totals['supply_diesel_arctic'], start_row)
+            self._set_cell_value(ws, target_row, 11, totals['supply_diesel_summer'], start_row)
+            # Колонки с накоплением и прочим оставляем как есть или 0
+            self._set_cell_value(ws, target_row, 5, 0, start_row)
+            # Колонка 12: Межсезонное или пусто
+            self._set_cell_value(ws, target_row, 12, 0, start_row)
+
+        # 3. Заполняем нулями все оставшиеся строки из шаблона, для которых ВООБЩЕ нет данных в БД
+        for tmpl_name, tmpl_row in template_rows.items():
+            if tmpl_row not in filled_rows:
+                self._set_cell_value(ws, tmpl_row, 4, static_date, start_row)
+                for col in [5, 6, 7, 8, 9, 10, 11, 12]:
+                    self._set_cell_value(ws, tmpl_row, col, 0, start_row)
 
     def _fill_sales_sheet_full(self, ws, aggregated_data: dict):
         start_row = 9
@@ -361,9 +405,11 @@ class TemplateReportGenerator:
             non_azs_locations = []
             
             for loc in sheet5_recs:
-                loc_name = str(loc.get('location_name', '')).lower()
-                if 'азс' in loc_name:
-                    azs_count += 1
+                loc_name_full = str(loc.get('location_name', ''))
+                loc_name_lower = loc_name_full.lower()
+                if 'азс' in loc_name_lower or loc_name_full.strip().isdigit() or 'шт' in loc_name_lower:
+                    # Извлекаем число АЗС из строки, а не считаем ряды
+                    azs_count += self._extract_azs_count(loc_name_full)
                     for key in azs_totals.keys():
                         azs_totals[key] += float(loc.get(key, 0) or 0)
                 else:
@@ -374,6 +420,7 @@ class TemplateReportGenerator:
                 self._set_cell_value(ws, current_row, 1, company_name, start_row)
                 # Для нефтебаз колонку B заполняем
                 self._set_cell_value(ws, current_row, 2, self._get_supplier_string(company_name), start_row)
+                # Колонка C: Нефтебаза — принадлежит конкретной компании
                 self._set_cell_value(ws, current_row, 3, loc.get('location_name', ''), start_row)
                 
                 self._set_cell_value(ws, current_row, 5, loc.get('daily_ai92', 0), start_row)
@@ -396,6 +443,7 @@ class TemplateReportGenerator:
             if azs_count > 0:
                 self._set_cell_value(ws, current_row, 1, company_name, start_row)
                 # Колонка 2 (B) для строки с АЗС ПРОПУСКАЕТСЯ по просьбе пользователя
+                # Колонка C: суммарное количество АЗС для данной компании
                 self._set_cell_value(ws, current_row, 3, f"АЗС ({azs_count} шт)", start_row)
                 
                 self._set_cell_value(ws, current_row, 5, azs_totals['daily_ai92'], start_row)
@@ -416,19 +464,57 @@ class TemplateReportGenerator:
 
     def _fill_aviation_sheet_full(self, ws, aggregated_data: dict):
         start_row = 8
-        current_row = start_row
+        
+        # 1. Читаем все аэропорты из шаблона и запоминаем их
+        template_airports = {}  # normalized_name -> row_number
+        for r in range(start_row, ws.max_row + 1):
+            cell_a = ws.cell(row=r, column=1).value
+            if cell_a and str(cell_a).strip():
+                name_norm = str(cell_a).strip().lower()
+                template_airports[name_norm] = r
+        
+        # 2. Собираем все данные из всех компаний
+        all_items = []
         for company_name, company_data in aggregated_data.items():
             for item in company_data.get('sheet6_data', []):
-                self._set_cell_value(ws, current_row, 1, item.get('airport_name', ''), start_row)
-                self._set_cell_value(ws, current_row, 2, item.get('tzk_name', ''), start_row)
-                self._set_cell_value(ws, current_row, 3, item.get('contracts_info', ''), start_row)
-                self._set_cell_value(ws, current_row, 4, item.get('supply_week', 0), start_row)
-                self._set_cell_value(ws, current_row, 5, item.get('supply_month_start', 0), start_row)
-                self._set_cell_value(ws, current_row, 6, item.get('monthly_demand', 0), start_row)
-                self._set_cell_value(ws, current_row, 7, item.get('consumption_week', 0), start_row)
-                self._set_cell_value(ws, current_row, 8, item.get('consumption_month_start', 0), start_row)
-                self._set_cell_value(ws, current_row, 9, item.get('end_of_day_balance', 0), start_row)
-                current_row += 1
+                all_items.append(item)
+        
+        # 3. Для каждого элемента данных — ищем совпадение в шаблоне
+        next_free_row = max(template_airports.values()) + 1 if template_airports else start_row
+        
+        for item in all_items:
+            airport_name = str(item.get('airport_name', '')).strip()
+            if not airport_name:
+                continue
+            
+            airport_norm = airport_name.lower()
+            
+            # Ищем совпадение в шаблоне (точное или частичное)
+            target_row = None
+            for tmpl_name, tmpl_row in template_airports.items():
+                if airport_norm in tmpl_name or tmpl_name in airport_norm:
+                    target_row = tmpl_row
+                    break
+            
+            if target_row is None:
+                # Аэропорт не найден в шаблоне — добавляем в конец
+                target_row = next_free_row
+                next_free_row += 1
+                self._set_cell_value(ws, target_row, 1, airport_name, start_row)
+                self._set_cell_value(ws, target_row, 2, item.get('tzk_name', ''), start_row)
+                self._set_cell_value(ws, target_row, 3, item.get('contracts_info', ''), start_row)
+            
+            # Записываем числовые данные (колонки D-I)
+            self._set_cell_value(ws, target_row, 4, item.get('supply_week', 0), start_row)
+            self._set_cell_value(ws, target_row, 5, item.get('supply_month_start', 0), start_row)
+            # Колонка F: записываем monthly_demand только если есть реальные данные
+            monthly_demand = item.get('monthly_demand', 0)
+            if monthly_demand and float(monthly_demand) > 0:
+                self._set_cell_value(ws, target_row, 6, monthly_demand, start_row)
+            # Если monthly_demand = 0 или None, оставляем текст шаблона нетронутым
+            self._set_cell_value(ws, target_row, 7, item.get('consumption_week', 0), start_row)
+            self._set_cell_value(ws, target_row, 8, item.get('consumption_month_start', 0), start_row)
+            self._set_cell_value(ws, target_row, 9, item.get('end_of_day_balance', 0), start_row)
 
 def generate_complete_report(db_connection, template_path=None):
     generator = TemplateReportGenerator(db_connection, template_path)

@@ -5,15 +5,15 @@ const CURRENT_HOST = window.location.hostname;
 const PROJECTS_CONFIG = {
     flask: {
         name: "Flask API",
-        path: `http://${CURRENT_HOST}:5000`,
-        port: 5000,
+        path: `http://${CURRENT_HOST}/flask`,
+        port: null,
         healthEndpoint: "/health",
         icon: "🐍"
     },
     react: {
         name: "React App",
-        path: `http://${CURRENT_HOST}:3002`,
-        port: 3002,
+        path: `http://${CURRENT_HOST}/react`,
+        port: null,
         healthEndpoint: "/",
         icon: "⚛️"
     }

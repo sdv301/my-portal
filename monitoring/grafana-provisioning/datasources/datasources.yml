@@ -20,14 +20,6 @@ datasources:
     isDefault: true
     editable: true
 
-  - name: SQLite (React App)
-    type: frser-sqlite-datasource
-    uid: react-sqlite
-    access: proxy
-    jsonData:
-      path: /var/lib/grafana/sqlite/data.sqlite
-    isDefault: false
-    editable: true
 
   - name: Prometheus
     type: prometheus

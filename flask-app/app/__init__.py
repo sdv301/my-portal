@@ -2,12 +2,16 @@
 from flask import Flask
 from config import Config
 from database.connection import db_connection
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__, 
                 template_folder='../templates',
                 static_folder='../static')
     app.config.from_object(Config)
+    
+    # Enable CORS for all origins (makes it work seamlessly across different network IPs without proxy layer)
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
     
     # Инициализация базы данных
     init_database(app)
